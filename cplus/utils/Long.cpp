@@ -23,9 +23,5 @@ namespace cplus {
 		inline Long::operator int64_t() {
 			return value;
 		}
-		
-		inline Long::operator Float() {
-			return Float(value);
-		}
 	}
 }

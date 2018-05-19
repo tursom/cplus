@@ -38,14 +38,14 @@ namespace cplus {
 			inline const pid_t &getPID() {
 				return pid;
 			}
-			
-			inline void lockOutput() const {
-				outputMutex.lock();
-			}
-			
-			inline void unlockOutput() const {
-				outputMutex.unlock();
-			}
+
+//			inline void lockOutput() const {
+//				outputMutex.lock();
+//			}
+//
+//			inline void unlockOutput() const {
+//				outputMutex.unlock();
+//			}
 			
 			inline static void lockOutput() {
 				outputMutex.lock();

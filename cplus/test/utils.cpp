@@ -4,7 +4,7 @@
 
 #include "../utils/List.hpp"
 #include "../system/OutputStream.h"
-#include "../utils/ListArray.hpp"
+#include "../utils/ArrayList.hpp"
 #include "../utils/Char.h"
 
 using namespace ::cplus::utils;
@@ -16,7 +16,6 @@ void testChar() {
 	Char a('a');
 	sout << aChar << endl
 	     << a << endl;
-	a = 'b';
 	sout << a << endl;
 }
 
@@ -32,8 +31,8 @@ void testList() {
 	sout << list.usedSize() << endl;
 }
 
-void testListArray() {
-	ListArray<int> list;
+void testArrayList() {
+	ArrayList<int> list;
 	size_t listSize = 24;
 	for (int i = 0; i < listSize; ++i) {
 		list.append(i);
@@ -51,7 +50,7 @@ void sizeOfListAndListArray() {
 	for (int j = 0; j < 22; ++j) {
 		sout << "list huge:" << listSize << endl;
 		{
-			ListArray<int> list(sizeOfListArray);
+			ArrayList<int> list(sizeOfListArray);
 			for (int i = 0; i < listSize; ++i) {
 				list.append(i);
 			}
@@ -68,4 +67,25 @@ void sizeOfListAndListArray() {
 		     << "memory size times:" << ((float) listMemorySize / listArratMemorySize) << endl;
 		listSize *= 2;
 	}
+}
+
+void testStack() {
+	int stackSize = 100;
+	sout << "stack size:" << stackSize << endl;
+	Stack<int> stack;
+	for (int i = 0; i < stackSize; ++i) {
+		stack.push(i);
+	}
+	stack.forEach([&]() {
+		sout << stack.pop() << " ";
+	});
+	sout << endl;
+	for (int i = stackSize; i > 0; --i) {
+		stack.push(i);
+	}
+	stack.forEach([&]() {
+		sout << stack.pop() << " ";
+	});
+	sout << endl;
+	sout << stack.usedSize() << endl;
 }

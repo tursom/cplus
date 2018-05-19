@@ -14,17 +14,17 @@ namespace cplus {
 	namespace utils {
 		class StringBuilder : Object {
 		public:
-			inline StringBuilder &append(const String &string);
+			StringBuilder &append(const String &string);
 			
-			inline StringBuilder &append(const char *string);
+			StringBuilder &append(const char *string);
 			
-			inline StringBuilder &append(Object value);
+			StringBuilder &append(Object value);
 			
-			inline StringBuilder &append(long value);
+			StringBuilder &append(long value);
 			
-			inline StringBuilder &append(unsigned long value);
+			StringBuilder &append(unsigned long value);
 			
-			inline StringBuilder &append(double value);
+			StringBuilder &append(double value);
 			
 			String toString() const override;
 		

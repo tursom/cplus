@@ -13,26 +13,29 @@
 namespace cplus {
 	namespace utils {
 		template<typename T>
-		CPlusClass(ListArray) {
+		CPlusClass(ArrayList) {
 		public:
-			ListArray() : ListArray(128) {}
+			ArrayList() : ArrayList(128) {}
 			
-			explicit ListArray(size_t unitSize) : unitSize(unitSize), endSize(0), unitArrayList(new T[unitSize]),
-			                                      usingState(0) {}
+			explicit ArrayList(size_t unitSize) : ArrayList(unitSize, 800) {}
 			
-			~ListArray() {
+			explicit ArrayList(size_t blockSize, size_t maxBlock)
+					: blockSize(blockSize), endPoint(0), unitArrayList(new T[blockSize], maxBlock), usingState(0) {}
+			
+			~ArrayList() {
 				unitArrayList.forEach([&]() {
 					delete[] unitArrayList.get();
 				});
 			}
 			
-			void append(const T &value) {
-				if (endSize == unitSize) {
-					unitArrayList.append(new T[unitSize]);
-					endSize = 0;
+			bool append(const T &value) {
+				if (endPoint == blockSize) {
+					if (!unitArrayList.append(new T[blockSize])) return false;
+					endPoint = 0;
 				}
-				unitArrayList.end()[endSize] = value;
-				++endSize;
+				unitArrayList.end()[endPoint] = value;
+				++endPoint;
+				return true;
 			}
 			
 			inline T &get() { return unitArrayList.get()[usingState]; }
@@ -41,10 +44,10 @@ namespace cplus {
 			
 			void next() {
 				++usingState;
-				if (usingState >= unitSize) {
+				if (usingState >= blockSize) {
 					unitArrayList.next();
 					usingState = 0;
-				} else if (usingState == endSize && unitArrayList.isEnd()) {
+				} else if (usingState == endPoint && unitArrayList.isEnd()) {
 					reset();
 				}
 			}
@@ -52,17 +55,17 @@ namespace cplus {
 			void prev() {
 				if (usingState == 0) {
 					unitArrayList.prev();
-					usingState = unitArrayList.isBegin() ? endSize : unitSize;
+					usingState = unitArrayList.isBegin() ? endPoint : blockSize;
 				}
 				--usingState;
 			}
 			
-			inline size_t size() { return unitSize * (unitArrayList.size() - 1) + endSize; }
+			inline size_t size() { return blockSize * (unitArrayList.size() - 1) + endPoint; }
 			
 			// used memory size
 			inline size_t usedSize() {
-				return sizeof(*this) + unitArrayList.usedSize() +
-				       sizeof(T) * unitSize * unitArrayList.size();
+				return sizeof(*this) + unitArrayList.usedSize() + sizeof(T) * blockSize * unitArrayList.size() +
+				       stateSave.usedSize();
 			}
 			
 			inline void reset() {
@@ -72,7 +75,7 @@ namespace cplus {
 			
 			inline bool isBegin() { return usingState == 0 && unitArrayList.isBegin(); }
 			
-			inline bool isEnd() { return usingState == endSize && unitArrayList.isEnd(); }
+			inline bool isEnd() { return usingState == endPoint && unitArrayList.isEnd(); }
 			
 			void forEach(const std::function<void(void)> &func) {
 				saveState();
@@ -84,25 +87,33 @@ namespace cplus {
 				loadState();
 			}
 			
+			const T &operator[](size_t location) {
+				saveState();
+				
+			}
+			
+			size_t getBlockSize() { return blockSize; }
+			
 			//主要是糊弄IDE（Clion）用
 			inline void forEach(void(*func)()) { forEach([&]() { func(); }); }
 			
 			//加载上次保存时的状态
 			inline void loadState() {
+				if (stateSave.size() == 0) return;
 				unitArrayList.loadState();
-				usingState = stateSave;
+				usingState = stateSave.pop();
 			}
 			
 			//保存状态
 			void saveState() {
-				stateSave = usingState;
+				stateSave.push(usingState);
 			}
 		
 		private:
-			const size_t unitSize;
-			size_t endSize;
+			const size_t blockSize;
+			size_t endPoint;
 			size_t usingState;
-			size_t stateSave; //用于储存上一次保存时的状态
+			Stack <size_t> stateSave; //用于储存上一次保存时的状态
 			List<T *> unitArrayList;
 		};
 	}

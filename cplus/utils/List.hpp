@@ -8,19 +8,24 @@
 #include <functional>
 #include "StringBuilder.h"
 #include "../tools/Class.h"
+#include "Stack.h"
 
 namespace cplus {
 	namespace utils {
 		template<typename T>
 		CPlusClass(List) {
 		public:
-			List() : state(new ListPoint()), liseSize(1) {
+			List() : state(nullptr), liseSize(1), stateSave(), prevSave() {
 				listBegin = state;
 				listEnd = state;
 				preview = state;
+				maxSize = 10240;
 			}
 			
-			explicit List(const T &value) : state(new ListPoint()), liseSize(1) {
+			explicit List(const T &value) : List(value, 10240) {}
+			
+			explicit List(const T &value, size_t maxSize) : state(new ListPoint()), liseSize(1), stateSave(),
+			                                                prevSave(), maxSize(maxSize) {
 				listBegin = state;
 				listEnd = state;
 				preview = state;
@@ -35,10 +40,17 @@ namespace cplus {
 				} while (state != listBegin); //遍历所有元素
 			}
 			
-			inline List &append(const T &value) {
-				listEnd = new ListPoint(listEnd, listBegin, value);
-				++liseSize;
-				return *this;
+			bool append(const T &value) {
+				if (state == nullptr) {
+					state = new ListPoint(listEnd, listBegin, value);
+					listEnd = listBegin = preview = state;
+				} else if (liseSize != maxSize) {
+					listEnd = new ListPoint(listEnd, listBegin, value);
+					++liseSize;
+					return true;
+				} else {
+					return false;
+				}
 			}
 			
 			inline size_t size() const { return liseSize; }
@@ -90,19 +102,20 @@ namespace cplus {
 			inline void forEach(void(*func)()) { forEach([&]() { func(); }); }
 			
 			inline void loadState() {
-				preview = prevSave;
-				state = stateSave;
+				if (prevSave.size() == 0 || stateSave.size() == 0) return;
+				preview = prevSave.pop();
+				state = stateSave.pop();
 			}
 			
 			inline void saveState() {
-				prevSave = preview;
-				stateSave = state;
+				prevSave.push(preview);
+				stateSave.push(state);
 			}
 			
 			inline size_t pointSize() { return sizeof(ListPoint); }
 			
 			inline size_t usedSize() {
-				return sizeof(*this) + sizeof(ListPoint) * size();
+				return sizeof(*this) + sizeof(ListPoint) * size() + stateSave.usedSize() + prevSave.usedSize();
 			}
 			
 			inline String toString() const override {
@@ -111,9 +124,9 @@ namespace cplus {
 				stringBuilder.append("size:");
 				stringBuilder.append(size());
 
-//				ListPoint *preview = this->preview;
-//				ListPoint *state = this->state;
-//				ListPoint *next;
+//				StackPoint *preview = this->preview;
+//				StackPoint *state = this->state;
+//				StackPoint *next;
 //				do {
 //					stringBuilder.append(state->toString());
 //					next = state->next(preview);
@@ -129,7 +142,7 @@ namespace cplus {
 			/**
 			 * 双向链表节点
 			 */
-			CPlusClass(ListPoint) {
+			class ListPoint {
 			public:
 				ListPoint() : nextAndPrev(nullptr) {}
 				
@@ -170,9 +183,10 @@ namespace cplus {
 			ListPoint *listEnd;
 			ListPoint *preview;
 			ListPoint *state;
-			ListPoint *prevSave; //用于储存上一次保存时的状态
-			ListPoint *stateSave; //用于储存上一次保存时的状态
+			Stack<ListPoint *> prevSave; //用于储存上一次保存时的状态
+			Stack<ListPoint *> stateSave; //用于储存上一次保存时的状态
 			size_t liseSize;
+			size_t maxSize;
 		};
 	}
 }

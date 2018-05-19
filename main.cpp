@@ -8,7 +8,8 @@
 #include "cplus/utils/Float.h"
 #include "cplus/utils/Short.h"
 #include "cplus/utils/List.hpp"
-#include "cplus/utils/ListArray.hpp"
+#include "cplus/utils/ArrayList.hpp"
+#include "cplus/utils/ArrayStack.h"
 
 using namespace cplus::utils;
 using namespace cplus::system;
@@ -68,8 +69,7 @@ void swap(T &a, T &b) {
 
 //CPlusClass(BigInteger) {
 //public:
-//	BigInteger(int n1) {
-//	}
+//	BigInteger() : n(128) {}
 //
 //	const int get() const { return n[1].n1; }
 //
@@ -87,32 +87,21 @@ void swap(T &a, T &b) {
 //		char n2:4;
 //	};
 //
-//	List<DoubleIntBit[128]> n;
+//	ListArray<DoubleIntBit> n;
 //};
 
 int main() {
-	size_t listSize = 1;
-	size_t sizeOfListArray = 128;
-	size_t listMemorySize, listArratMemorySize;
-	for (int j = 0; j < 22; ++j) {
-		std::cout << "list size:" << listSize << std::endl;
-		{
-			ListArray<int> list(sizeOfListArray);
-			for (int i = 0; i < listSize; ++i) {
-				list.append(i);
-			}
-			listArratMemorySize = list.usedSize();
-		}
-		{
-			List<int> list;
-			for (int i = 0; i < listSize; ++i) {
-				list.append(i);
-			}
-			listMemorySize = list.usedSize();
-		}
-		std::cout << listArratMemorySize << ":" << listMemorySize << std::endl
-		          << "Times:" << ((float) listMemorySize / listArratMemorySize) << std::endl;
-		listSize *= 2;
+	Stack<int> list;
+	size_t listSize = 100;
+	list.forEach([&]() {
+		sout << list.pop() << endl;
+	});
+	for (int i = 0; i < listSize; ++i) {
+		list.push(i);
 	}
+	list.forEach([&]() {
+		sout << list.pop() << endl;
+	});
+	sout << list.usedSize() << endl;
 	return 0;
 }

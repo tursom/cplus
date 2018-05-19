@@ -13,22 +13,22 @@ namespace cplus {
 		public:
 			explicit OutputStream(std::ostream &os) : os(&os) {}
 			
-			inline const OutputStream &operator<<(const ::cplus::utils::Object &object) const;
+			const OutputStream &operator<<(const ::cplus::utils::Object &object) const;
 			
-			inline const OutputStream &operator<<(const char *str) const;
+			const OutputStream &operator<<(const char *str) const;
 			
-			inline const OutputStream &operator<<(int value) const;
+			const OutputStream &operator<<(int value) const;
 			
-			inline const OutputStream &operator<<(unsigned int value) const;
-			inline const OutputStream &operator<<(long value) const;
+			const OutputStream &operator<<(unsigned int value) const;
+			const OutputStream &operator<<(long value) const;
 			
-			inline const OutputStream &operator<<(unsigned long value) const;
+			const OutputStream &operator<<(unsigned long value) const;
 			
-			inline const OutputStream &operator<<(long long value) const;
+			const OutputStream &operator<<(long long value) const;
 			
-			inline const OutputStream &operator<<(unsigned long long value) const;
+			const OutputStream &operator<<(unsigned long long value) const;
 			
-			inline const OutputStream &operator<<(double value) const;
+			const OutputStream &operator<<(double value) const;
 		
 		private:
 			std::ostream *os;
