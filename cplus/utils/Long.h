@@ -9,7 +9,7 @@
 #include <cstdint>
 #include "Object.h"
 #include "String.h"
-#include "../tools/Class.h"
+#include "../tools/class.h"
 
 namespace cplus {
 	namespace utils {

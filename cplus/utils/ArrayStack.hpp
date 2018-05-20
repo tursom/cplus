@@ -6,8 +6,10 @@
 #define CPLUS_ARRAYSTACK_H
 
 #include <functional>
-#include "../tools/Class.h"
 #include "Stack.h"
+#include "../tools/class.h"
+#include "../memory/dark_magic.h"
+#include "../thread/Runnable.h"
 
 namespace cplus {
 	namespace utils {
@@ -55,31 +57,66 @@ namespace cplus {
 					}
 				}
 				//压数据入栈
-				last[endPoint++] = value;
+				::cplus::memory::copy(value, last[endPoint++]);
 				//返回true表示成功
 				return true;
 			}
 			
 			const T &pop() {
-				//获取数据
-				lastValue = last[--endPoint];
+				//检查是否还有剩余元素
+				if (endPoint == 0) return lastValue; //如果没有则返回最后的缓存
+				
+				//使用黑魔法获取数据
+				::cplus::memory::copy(last[--endPoint], lastValue);
 				
 				//检查是否已到数据块边界
-				if ((endPoint == 0) && (blockArrayStack.size() != 1)) {
+				if (endPoint == 0) {
 					//释放内存
 					auto t = blockArrayStack.pop();
 					delete t;
 					
 					//更新last状态
-					last = blockArrayStack.pop();
-					blockArrayStack.push(last);
-					
-					//更新endPoint指针状态
-					endPoint = blockSize;
+					if (blockArrayStack.pop(last)) {
+						//成功
+						blockArrayStack.push(last);
+						//更新endPoint指针状态
+						endPoint = blockSize;
+					}
 				}
 				//返回数据
 				return lastValue;
 			}
+			
+			bool pop(const T &buffer) {
+				//检查是否还有剩余元素
+				if (endPoint == 0) return false; //如果没有则返回最后的缓存
+				
+				//使用黑魔法获取和更新数据
+				::cplus::memory::copy(last[--endPoint], lastValue);
+				::cplus::memory::copy(lastValue, buffer);
+				
+				//检查是否已到数据块边界
+				if (endPoint == 0) {
+					//释放内存
+					auto t = blockArrayStack.pop();
+					delete t;
+					
+					//更新last状态
+					if (blockArrayStack.pop(last)) {
+						//成功
+						blockArrayStack.push(last);
+						//更新endPoint指针状态
+						endPoint = blockSize;
+						//返回数据
+						return true;
+					} else {
+						//更新last状态失败
+						return true; //至少pop是成功的
+					}
+				}
+			}
+			
+			bool isFull() { return endPoint == blockSize && blockArrayStack.isFull(); }
 			
 			inline T &get() { return lastValue; }
 			
@@ -101,15 +138,37 @@ namespace cplus {
 						state = endPoint;
 					}
 					while (state > 0) {
-						lastValue = blockArrayStack.get()[state - 1];
+						::cplus::memory::copy(blockArrayStack.get()[state - 1], lastValue);
 						func();
 						state--;
 					}
 				});
 			}
 			
-			//主要是糊弄IDE（Clion）用
-			inline void forEach(void(*func)()) { forEach([&]() { func(); }); }
+			void forEach(cplus::thread::Runnable runnable) {
+				blockArrayStack.forEach([&]() {
+					size_t state = blockSize;
+					if (blockArrayStack.get() == last) {
+						state = endPoint;
+					}
+					while (state > 0) {
+						::cplus::memory::copy(blockArrayStack.get()[state - 1], lastValue);
+						runnable.run();
+						state--;
+					}
+				});
+			}
+			
+			size_t size() const { return blockSize * (blockArrayStack.size() - 1) + endPoint - 1; }
+			
+			inline String toString() const override {
+				StringBuilder stringBuilder;
+				stringBuilder.append("cplus::utils::ArrayStack(");
+				stringBuilder.append("size:");
+				stringBuilder.append(size());
+				stringBuilder.append(")");
+				return stringBuilder.toString();
+			}
 		
 		private:
 			const size_t blockSize;

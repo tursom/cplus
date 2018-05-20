@@ -8,11 +8,11 @@
 #include "../utils/Object.h"
 
 #ifndef CPlusClass
-#define CPlusClass(clazz) class clazz:public ::cplus::utils::Object
+#define CPlusClass(clazz) class clazz : public ::cplus::utils::Object
 #endif
 
 namespace cplus {
-    namespace tools {}
+	namespace tools {}
 }
 
 #endif //UNTITLED_CLASS_H

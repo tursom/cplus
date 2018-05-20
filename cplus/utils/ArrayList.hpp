@@ -5,10 +5,12 @@
 #ifndef CPLUS_UTILS_ListArray_HPP
 #define CPLUS_UTILS_ListArray_HPP
 
+#include <cmath>
 #include <functional>
 #include "StringBuilder.h"
 #include "List.hpp"
-#include "../tools/Class.h"
+#include "../tools/class.h"
+#include "../thread/Runnable.h"
 
 namespace cplus {
 	namespace utils {
@@ -20,12 +22,14 @@ namespace cplus {
 			explicit ArrayList(size_t unitSize) : ArrayList(unitSize, 800) {}
 			
 			explicit ArrayList(size_t blockSize, size_t maxBlock)
-					: blockSize(blockSize), endPoint(0), unitArrayList(new T[blockSize], maxBlock), usingState(0) {}
+					: blockSize(blockSize), endPoint(0), unitArrayList(new T[blockSize], maxBlock), usingState(0),
+					  array(nullptr) {}
 			
 			~ArrayList() {
 				unitArrayList.forEach([&]() {
 					delete[] unitArrayList.get();
 				});
+				if (array != nullptr) delete[] array;
 			}
 			
 			bool append(const T &value) {
@@ -33,7 +37,7 @@ namespace cplus {
 					if (!unitArrayList.append(new T[blockSize])) return false;
 					endPoint = 0;
 				}
-				unitArrayList.end()[endPoint] = value;
+				::cplus::memory::copy(value, unitArrayList.end()[endPoint]);
 				++endPoint;
 				return true;
 			}
@@ -87,15 +91,48 @@ namespace cplus {
 				loadState();
 			}
 			
-			const T &operator[](size_t location) {
+			
+			void forEach(cplus::thread::Runnable runnable) {
 				saveState();
-				
+				reset();
+				do {
+					runnable.run();
+					next();
+				} while (!isBegin());
+				loadState();
+			}
+			
+			T *toArray() {
+				if (array != nullptr) delete array;
+				array = new T[size()];
+				size_t p = 0;
+				forEach([&]() {
+					::cplus::memory::copy(get(), array[p++]);
+				});
+				return array;
+			};
+			
+			std::unique_ptr<T[]> toSmartArray() {
+				std::unique_ptr<T[]> array(new T[size()]);
+				size_t p = 0;
+				forEach([&]() {
+					::cplus::memory::copy(get(), array[p++]);
+				});
+				return array;
+			};
+			
+			T &operator[](size_t location) {
+				saveState();
+				reset();
+				for (size_t n = static_cast<size_t>(floor((double) ((float) location) / blockSize)); n > 0; --n) {
+					next();
+				}
+				size_t locate = location % blockSize;
+				loadState();
+				return unitArrayList.end()[locate];
 			}
 			
 			size_t getBlockSize() { return blockSize; }
-			
-			//主要是糊弄IDE（Clion）用
-			inline void forEach(void(*func)()) { forEach([&]() { func(); }); }
 			
 			//加载上次保存时的状态
 			inline void loadState() {
@@ -110,6 +147,7 @@ namespace cplus {
 			}
 		
 		private:
+			T *array;
 			const size_t blockSize;
 			size_t endPoint;
 			size_t usingState;

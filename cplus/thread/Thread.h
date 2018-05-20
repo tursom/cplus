@@ -7,28 +7,46 @@
 
 #include <pthread.h>
 #include "ThreadMutex.h"
+#include "Runnable.h"
+#include "../utils/ArrayStack.hpp"
 
 namespace cplus {
 	namespace thread {
-		typedef void *(*Func)(void *);
-		
 		class Thread {
 		public:
 			Thread() = default;
 			
-			explicit Thread(void *func(void *)) : func(func) {
+			explicit Thread(void (*func)(void *)) : func(Runnable([&]() { (*func)(this); })) {
 				pidCountMutex.lock();
 				pid = pidCount++;
 				pidCountMutex.unlock();
 			}
 			
-			inline void start() {
+			explicit Thread(void (*func)()) : func(Runnable(func)) {
+				pidCountMutex.lock();
+				pid = pidCount++;
+				pidCountMutex.unlock();
+			}
+			
+			explicit Thread(const Runnable &func) : func(func) {
+				pidCountMutex.lock();
+				pid = pidCount++;
+				pidCountMutex.unlock();
+			}
+			
+			inline bool start() {
 				_start();
 				pthread_detach(pthread);
 			}
 			
 			inline void join() {
 				pthread_join(pthread, nullptr);
+			}
+			
+			inline void joinAll() {
+				pThreadStack.forEach([&]() {
+					pthread_join(pThreadStack.get(), nullptr);
+				});
 			}
 			
 			inline const pthread_t &getPthread() {
@@ -57,15 +75,16 @@ namespace cplus {
 		
 		private:
 			pthread_t pthread{};
-			Func func;
+			Runnable func;
 			pid_t pid;
+			static ::cplus::utils::ArrayStack<pthread_t> pThreadStack;
 			static pid_t pidCount;
 			static ThreadMutex pidCountMutex;
 			static ThreadMutex outputMutex;
 			
-			void _start() {
-				pthread_create(&pthread, nullptr, func, this);
-			}
+			bool _start();
+			
+			friend void *threadStart(void *thread);
 		};
 	}
 }

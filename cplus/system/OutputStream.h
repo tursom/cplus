@@ -5,7 +5,7 @@
 #ifndef UNTITLED_OUTPUTSTREAM_H
 #define UNTITLED_OUTPUTSTREAM_H
 
-#include "../tools/Class.h"
+#include "../tools/class.h"
 
 namespace cplus {
 	namespace system {

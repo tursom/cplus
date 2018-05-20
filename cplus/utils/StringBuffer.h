@@ -5,7 +5,7 @@
 #ifndef UNTITLED_STRINGBUFFER_H
 #define UNTITLED_STRINGBUFFER_H
 
-#include "../tools/Class.h"
+#include "../tools/class.h"
 #include "../thread/ThreadMutex.h"
 
 namespace cplus {

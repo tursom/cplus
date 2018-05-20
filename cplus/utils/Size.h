@@ -5,7 +5,7 @@
 #ifndef CPLUS_SIZE_H
 #define CPLUS_SIZE_H
 
-#include "../tools/Class.h"
+#include "../tools/class.h"
 
 namespace cplus {
 	namespace utils {

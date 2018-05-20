@@ -7,15 +7,17 @@
 
 #include <functional>
 #include "StringBuilder.h"
-#include "../tools/Class.h"
 #include "Stack.h"
+#include "../tools/class.h"
+#include "../memory/dark_magic.h"
+#include "../thread/Runnable.h"
 
 namespace cplus {
 	namespace utils {
 		template<typename T>
 		CPlusClass(List) {
 		public:
-			List() : state(nullptr), liseSize(1), stateSave(), prevSave() {
+			List() : state(nullptr), liseSize(1), stateSave(), prevSave(), array(nullptr) {
 				listBegin = state;
 				listEnd = state;
 				preview = state;
@@ -24,8 +26,8 @@ namespace cplus {
 			
 			explicit List(const T &value) : List(value, 10240) {}
 			
-			explicit List(const T &value, size_t maxSize) : state(new ListPoint()), liseSize(1), stateSave(),
-			                                                prevSave(), maxSize(maxSize) {
+			explicit List(const T &value, size_t maxSize)
+					: state(new ListPoint()), liseSize(1), stateSave(), prevSave(), maxSize(maxSize), array(nullptr) {
 				listBegin = state;
 				listEnd = state;
 				preview = state;
@@ -38,6 +40,7 @@ namespace cplus {
 					next(); //next只调用state的函数，对于上一个元素只需要地址即可
 					delete preview; //删除上一个元素
 				} while (state != listBegin); //遍历所有元素
+				if (array != nullptr) delete[] array;
 			}
 			
 			bool append(const T &value) {
@@ -91,15 +94,26 @@ namespace cplus {
 			void forEach(const std::function<void(void)> &func) {
 				saveState();
 				reset();
-				do {
-					func();
-					next();
-				} while (state != listBegin);
+				if (state != nullptr) {
+					do {
+						func();
+						next();
+					} while (state != listBegin);
+				}
 				loadState();
 			}
 			
-			//主要是糊弄IDE（Clion）用
-			inline void forEach(void(*func)()) { forEach([&]() { func(); }); }
+			void forEach(cplus::thread::Runnable runnable) {
+				saveState();
+				reset();
+				if (state != nullptr) {
+					do {
+						runnable.run();
+						next();
+					} while (state != listBegin);
+				}
+				loadState();
+			}
 			
 			inline void loadState() {
 				if (prevSave.size() == 0 || stateSave.size() == 0) return;
@@ -118,22 +132,30 @@ namespace cplus {
 				return sizeof(*this) + sizeof(ListPoint) * size() + stateSave.usedSize() + prevSave.usedSize();
 			}
 			
+			T *toArray() {
+				if (array != nullptr) delete array;
+				array = new T[size()];
+				size_t p = 0;
+				forEach([&]() {
+					::cplus::memory::copy(get(), array[p++]);
+				});
+				return array;
+			};
+			
+			std::unique_ptr<T[]> toSmartArray() {
+				std::unique_ptr<T[]> array(new T[size()]);
+				size_t p = 0;
+				forEach([&]() {
+					::cplus::memory::copy(get(), array[p++]);
+				});
+				return array;
+			};
+			
 			inline String toString() const override {
 				StringBuilder stringBuilder;
 				stringBuilder.append("cplus::utils::List(");
 				stringBuilder.append("size:");
 				stringBuilder.append(size());
-
-//				StackPoint *preview = this->preview;
-//				StackPoint *state = this->state;
-//				StackPoint *next;
-//				do {
-//					stringBuilder.append(state->toString());
-//					next = state->next(preview);
-//					preview = state;
-//					state = next;
-//				} while (state != listBegin);
-				
 				stringBuilder.append(")");
 				return stringBuilder.toString();
 			}
@@ -179,6 +201,7 @@ namespace cplus {
 				ListPoint *nextAndPrev;
 			};
 			
+			T *array;
 			ListPoint *listBegin;
 			ListPoint *listEnd;
 			ListPoint *preview;

@@ -5,7 +5,7 @@
 #ifndef UNTITLED_DOUBLE_H
 #define UNTITLED_DOUBLE_H
 
-#include "../tools/Class.h"
+#include "../tools/class.h"
 
 namespace cplus {
 	namespace utils {

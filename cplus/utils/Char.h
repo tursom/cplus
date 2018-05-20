@@ -9,7 +9,7 @@
 #include "Short.h"
 #include "Int.h"
 #include "Long.h"
-#include "../tools/Class.h"
+#include "../tools/class.h"
 
 namespace cplus {
 	namespace utils {

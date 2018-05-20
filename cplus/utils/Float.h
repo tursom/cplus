@@ -6,7 +6,7 @@
 #define CPLUS_UTILS_Float_H
 
 #include <cfloat>
-#include "../tools/Class.h"
+#include "../tools/class.h"
 #include "Double.h"
 
 namespace cplus {
