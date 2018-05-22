@@ -1,14 +1,29 @@
 # top-most EditorCOnfig file
 root = true 
+
 # all files
 [*]
 indent_style = tab
 indent_size = 4 
+
 # kotlin source file
 [*.kt]
 indent_style = tab
 indent_size = 2 
+
 # java source file
 [*.java]
 indent_style = tab
 indent_size = 2
+
+[*.h]
+indent_style = tab  
+indent_size = 2  
+
+[*.cpp]
+indent_style = tab  
+indent_size = 2  
+
+[*.hpp]  
+indent_style = tab    
+indent_size = 2    
