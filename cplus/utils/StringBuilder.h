@@ -7,14 +7,14 @@
 
 
 #include <string>
-#include "Object.h"
-#include "String.h"
+#include "../tools/class.h"
+#include "../lang/String.h"
 
 namespace cplus {
 	namespace utils {
-		class StringBuilder : Object {
+		CPlusClass(StringBuilder) {
 		public:
-			StringBuilder &append(const String &string);
+			StringBuilder &append(const ::cplus::lang::String &string);
 			
 			StringBuilder &append(const char *string);
 			
@@ -26,7 +26,7 @@ namespace cplus {
 			
 			StringBuilder &append(double value);
 			
-			String toString() const override;
+			::cplus::lang::String toString() const override;
 		
 		private:
 			std::string value;

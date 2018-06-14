@@ -5,13 +5,13 @@
 #include <iostream>
 
 #include "OutputStream.h"
-#include "../utils/String.h"
-#include "../utils/Long.h"
+#include "../lang/String.h"
+#include "../lang/Long.h"
 
 namespace cplus {
 	namespace system {
 		const ::cplus::system::OutputStream &
-		::cplus::system::OutputStream::operator<<(const ::cplus::utils::Object &object) const {
+		::cplus::system::OutputStream::operator<<(const ::cplus::lang::Object &object) const {
 			(*os) << object.toString().__stdString();
 			return *this;
 		}
@@ -57,6 +57,6 @@ namespace cplus {
 		}
 		
 		OutputStream sout(std::cout);
-		::cplus::utils::String endl("\n");
+		::cplus::lang::String endl("\n");
 	}
 }

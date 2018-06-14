@@ -3,13 +3,13 @@
 //
 
 #include "StringBuilder.h"
-#include "Long.h"
-#include "Double.h"
+#include "../lang/Long.h"
+#include "../lang/Double.h"
 
 
 namespace cplus {
 	namespace utils {
-		StringBuilder &StringBuilder::append(const String &string) {
+		StringBuilder &StringBuilder::append(const ::cplus::lang::String &string) {
 			value.append(string.c_str());
 			return *this;
 		}
@@ -19,8 +19,8 @@ namespace cplus {
 			return *this;
 		}
 		
-		String StringBuilder::toString() const {
-			return String(value);
+		::cplus::lang::String StringBuilder::toString() const {
+			return ::cplus::lang::String(value);
 		}
 		
 		StringBuilder &StringBuilder::append(Object value) {
@@ -29,12 +29,12 @@ namespace cplus {
 		}
 		
 		StringBuilder &StringBuilder::append(long value) {
-			this->value.append(Long(value).toString().c_str());
+			this->value.append(::cplus::lang::Long(value).toString().c_str());
 			return *this;
 		}
 		
 		StringBuilder &StringBuilder::append(double value) {
-			this->value.append(Double(value).toString().c_str());
+			this->value.append(::cplus::lang::Double(value).toString().c_str());
 			return *this;
 		}
 		

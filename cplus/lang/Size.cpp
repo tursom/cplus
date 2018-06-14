@@ -6,7 +6,7 @@
 #include "String.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		String Size::toString() const {
 			char str[22];
 			sprintf(str, "%li", value);

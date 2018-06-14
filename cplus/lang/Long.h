@@ -12,7 +12,7 @@
 #include "../tools/class.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		class Float;
 		
 		CPlusClass(Long) {

@@ -7,27 +7,26 @@
 
 #include <functional>
 #include <iostream>
+#include <utility>
 #include "../tools/class.h"
 
 namespace cplus {
 	namespace thread {
+		template<typename T>
 		CPlusClass(Runnable) {
 		public:
 			Runnable() : func(nullptr) {}
 			
+			explicit Runnable(std::function<void(T)> func) : func(func) {}
 			
-			Runnable(void(*func)()) : func(func) {}
-			
-			Runnable(std::function<void()> func) : func(func) {}
-			
-			virtual void run() {
-				if (func != nullptr)func();
+			virtual void run(T value) const {
+				if (func != nullptr)func(value);
 			}
 			
-			void operator()() { run(); }
+			void operator()(T &value) const { run(value); }
 		
 		private:
-			std::function<void()> func;
+			std::function<void(T)> func;
 		};
 	}
 }

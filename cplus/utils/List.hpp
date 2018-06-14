@@ -17,29 +17,21 @@ namespace cplus {
 		template<typename T>
 		CPlusClass(List) {
 		public:
-			List() : state(nullptr), liseSize(1), stateSave(), prevSave(), array(nullptr) {
+			List() : List(10240) {}
+			
+			explicit List(size_t maxSize) : state(nullptr), listSize(0), maxSize(maxSize), array(nullptr) {
 				listBegin = state;
 				listEnd = state;
 				preview = state;
-				maxSize = 10240;
-			}
-			
-			explicit List(const T &value) : List(value, 10240) {}
-			
-			explicit List(const T &value, size_t maxSize)
-					: state(new ListPoint()), liseSize(1), stateSave(), prevSave(), maxSize(maxSize), array(nullptr) {
-				listBegin = state;
-				listEnd = state;
-				preview = state;
-				state->set(value);
 			}
 			
 			~List() {
 				reset(); //指针复位
-				do {
+				while (state != listEnd) {
 					next(); //next只调用state的函数，对于上一个元素只需要地址即可
 					delete preview; //删除上一个元素
-				} while (state != listBegin); //遍历所有元素
+				}
+				if (state != nullptr)delete state; //遍历所有元素
 				if (array != nullptr) delete[] array;
 			}
 			
@@ -47,16 +39,16 @@ namespace cplus {
 				if (state == nullptr) {
 					state = new ListPoint(listEnd, listBegin, value);
 					listEnd = listBegin = preview = state;
-				} else if (liseSize != maxSize) {
+				} else if (listSize != maxSize) {
 					listEnd = new ListPoint(listEnd, listBegin, value);
-					++liseSize;
-					return true;
+					++listSize;
 				} else {
 					return false;
 				}
+				return true;
 			}
 			
-			inline size_t size() const { return liseSize; }
+			inline size_t size() const { return listSize; }
 			
 			inline void reset() {
 				state = listBegin;
@@ -71,7 +63,7 @@ namespace cplus {
 			
 			inline const T &begin() const { return listBegin->get(); }
 			
-			inline T &end() { return listEnd->get(); }
+			T &end() { return listEnd->get(); }
 			
 			const T &end() const { return listEnd->get(); }
 			
@@ -91,53 +83,44 @@ namespace cplus {
 				preview = state->prev(next);
 			}
 			
-			void forEach(const std::function<void(void)> &func) {
-				saveState();
-				reset();
+			void forEach(const std::function<void(T &)> &func) const {
+				auto state = listBegin;
+				auto preview = listEnd;
 				if (state != nullptr) {
 					do {
-						func();
-						next();
+						func(state->get());
+						auto next = state->next(preview);
+						preview = state;
+						state = next;
 					} while (state != listBegin);
 				}
-				loadState();
 			}
 			
-			void forEach(cplus::thread::Runnable runnable) {
-				saveState();
-				reset();
+			void forEach(cplus::thread::Runnable<T &> runnable) const {
+				auto state = listBegin;
+				auto preview = listEnd;
 				if (state != nullptr) {
 					do {
-						runnable.run();
-						next();
+						runnable(state->get());
+						auto next = state->next(preview);
+						preview = state;
+						state = next;
 					} while (state != listBegin);
 				}
-				loadState();
 			}
 			
-			inline void loadState() {
-				if (prevSave.size() == 0 || stateSave.size() == 0) return;
-				preview = prevSave.pop();
-				state = stateSave.pop();
-			}
+			inline size_t pointSize() const { return sizeof(ListPoint); }
 			
-			inline void saveState() {
-				prevSave.push(preview);
-				stateSave.push(state);
-			}
-			
-			inline size_t pointSize() { return sizeof(ListPoint); }
-			
-			inline size_t usedSize() {
-				return sizeof(*this) + sizeof(ListPoint) * size() + stateSave.usedSize() + prevSave.usedSize();
+			inline size_t usedSize() const {
+				return sizeof(*this) + sizeof(ListPoint) * size();
 			}
 			
 			T *toArray() {
 				if (array != nullptr) delete array;
 				array = new T[size()];
 				size_t p = 0;
-				forEach([&]() {
-					::cplus::memory::copy(get(), array[p++]);
+				forEach([&](T &value) {
+					::cplus::memory::copy(value, array[p++]);
 				});
 				return array;
 			};
@@ -145,19 +128,23 @@ namespace cplus {
 			std::unique_ptr<T[]> toSmartArray() {
 				std::unique_ptr<T[]> array(new T[size()]);
 				size_t p = 0;
-				forEach([&]() {
-					::cplus::memory::copy(get(), array[p++]);
+				forEach([&](T &value) {
+					::cplus::memory::copy(value, array[p++]);
 				});
 				return array;
 			};
 			
-			inline String toString() const override {
+			inline ::cplus::lang::String toString() const override {
 				StringBuilder stringBuilder;
 				stringBuilder.append("cplus::utils::List(");
 				stringBuilder.append("size:");
 				stringBuilder.append(size());
 				stringBuilder.append(")");
 				return stringBuilder.toString();
+			}
+			
+			bool isFull() {
+				return listSize >= maxSize;
 			}
 		
 		private:
@@ -201,14 +188,24 @@ namespace cplus {
 				ListPoint *nextAndPrev;
 			};
 			
+			inline void constReset() const {
+				::cplus::memory::copy(listBegin, state);
+				::cplus::memory::copy(listEnd, preview);
+			}
+			
+			inline void constNext() const {
+				auto next = state->next(preview);
+				::cplus::memory::copy(state, preview);
+				::cplus::memory::copy(next, state);
+			}
+			
+			
 			T *array;
 			ListPoint *listBegin;
 			ListPoint *listEnd;
 			ListPoint *preview;
 			ListPoint *state;
-			Stack<ListPoint *> prevSave; //用于储存上一次保存时的状态
-			Stack<ListPoint *> stateSave; //用于储存上一次保存时的状态
-			size_t liseSize;
+			size_t listSize;
 			size_t maxSize;
 		};
 	}

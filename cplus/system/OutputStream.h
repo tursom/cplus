@@ -13,7 +13,7 @@ namespace cplus {
 		public:
 			explicit OutputStream(std::ostream &os) : os(&os) {}
 			
-			const OutputStream &operator<<(const ::cplus::utils::Object &object) const;
+			const OutputStream &operator<<(const ::cplus::lang::Object &object) const;
 			
 			const OutputStream &operator<<(const char *str) const;
 			
@@ -35,7 +35,7 @@ namespace cplus {
 		};
 		
 		extern OutputStream sout;
-		extern ::cplus::utils::String endl;
+		extern ::cplus::lang::String endl;
 	}
 }
 

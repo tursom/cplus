@@ -11,7 +11,7 @@
 #include <cstdint>
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		class Int : public Object {
 		public:
 			explicit Int(int32_t value) : value(value) {}

@@ -10,7 +10,7 @@
 #include "Double.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		CPlusClass(Float) {
 		public:
 			explicit Float(float f) : value(f) {}

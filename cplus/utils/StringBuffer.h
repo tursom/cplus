@@ -12,9 +12,9 @@ namespace cplus {
 	namespace utils {
 		CPlusClass(StringBuffer) {
 		public:
-			StringBuffer &append(const String &string);
+			StringBuffer &append(const ::cplus::lang::String &string);
 			
-			String toString() const override;
+			::cplus::lang::String toString() const override;
 		
 		private:
 			::cplus::thread::ThreadMutex mutex;

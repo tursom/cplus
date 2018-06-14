@@ -5,7 +5,7 @@
 #include "String.h"
 
 namespace cplus {
-    namespace utils {
+    namespace lang {
 //        std::ostream &operator<<(std::ostream &os, const String &string) {
 //            os << *string.value;
 //        }

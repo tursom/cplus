@@ -12,7 +12,7 @@
 {\
     char *swapA = (char *) &a;\
     char *swapB = (char *) &b;\
-    for (size_t loopTime = sizeof(a); loopTime > 0; loopTime--)\
+    for (size_t loopTime = (sizeof(a) < sizeof(b))? sizeof(a): sizeof(b); loopTime > 0; loopTime--)\
     {\
         (*swapA) = (*swapA) ^ (*swapB);\
         (*swapB) = (*swapA) ^ *(swapB);\
@@ -28,9 +28,7 @@
 {\
     char *swapA = (char *) &a;\
     char *swapB = (char *) &b;\
-	size_t sizeOfA = sizeof(a);\
-	size_t sizeOfB = sizeof(b);\
-    for (size_t loopTime = (sizeOfA < sizeOfB) ? sizeOfA : sizeOfB; loopTime > 0; loopTime--)\
+    for (size_t loopTime = (sizeof(a) < sizeof(b))? sizeof(a): sizeof(b); loopTime > 0; loopTime--)\
     {\
         (*swapB) = (*swapA);\
         ++swapA;\

@@ -11,7 +11,7 @@
 #include "Object.h"
 
 namespace cplus {
-    namespace utils {
+    namespace lang {
         class String : public Object {
         public:
             explicit String(const char *&str) { value = std::make_shared<std::string>(str); }

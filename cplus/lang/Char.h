@@ -12,7 +12,7 @@
 #include "../tools/class.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		CPlusClass(Char) {
 		public:
 			Char() : Char(0) {}

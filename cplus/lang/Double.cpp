@@ -8,7 +8,7 @@
 #include "Float.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		String Double::toString() const {
 			char str[20];
 			sprintf(str, "%e", value);

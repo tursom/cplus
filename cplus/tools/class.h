@@ -5,10 +5,10 @@
 #ifndef UNTITLED_CLASS_H
 #define UNTITLED_CLASS_H
 
-#include "../utils/Object.h"
+#include "../lang/Object.h"
 
 #ifndef CPlusClass
-#define CPlusClass(clazz) class clazz : public ::cplus::utils::Object
+#define CPlusClass(clazz) class clazz : public ::cplus::lang::Object
 #endif
 
 namespace cplus {

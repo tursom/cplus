@@ -22,19 +22,20 @@ namespace cplus {
 			explicit ArrayList(size_t unitSize) : ArrayList(unitSize, 800) {}
 			
 			explicit ArrayList(size_t blockSize, size_t maxBlock)
-					: blockSize(blockSize), endPoint(0), unitArrayList(new T[blockSize], maxBlock), usingState(0),
+					: blockSize(blockSize), endPoint(blockSize), unitArrayList(maxBlock), usingState(0),
 					  array(nullptr) {}
 			
 			~ArrayList() {
-				unitArrayList.forEach([&]() {
-					delete[] unitArrayList.get();
+				unitArrayList.forEach([&](T *block) {
+					delete[] block;
 				});
 				if (array != nullptr) delete[] array;
 			}
 			
 			bool append(const T &value) {
 				if (endPoint == blockSize) {
-					if (!unitArrayList.append(new T[blockSize])) return false;
+					if (!unitArrayList.append(new T[blockSize]))
+						return false;
 					endPoint = 0;
 				}
 				::cplus::memory::copy(value, unitArrayList.end()[endPoint]);
@@ -42,9 +43,9 @@ namespace cplus {
 				return true;
 			}
 			
-			inline T &get() { return unitArrayList.get()[usingState]; }
+			T &get() { return unitArrayList.get()[usingState]; }
 			
-			inline const T &get() const { return unitArrayList.get()[usingState]; }
+			const T &get() const { return unitArrayList.get()[usingState]; }
 			
 			void next() {
 				++usingState;
@@ -64,12 +65,11 @@ namespace cplus {
 				--usingState;
 			}
 			
-			inline size_t size() { return blockSize * (unitArrayList.size() - 1) + endPoint; }
+			size_t size() { return blockSize * (unitArrayList.size() - 1) + endPoint; }
 			
 			// used memory size
-			inline size_t usedSize() {
-				return sizeof(*this) + unitArrayList.usedSize() + sizeof(T) * blockSize * unitArrayList.size() +
-				       stateSave.usedSize();
+			size_t usedSize() const {
+				return sizeof(*this) + unitArrayList.usedSize() + sizeof(T) * blockSize * unitArrayList.size();
 			}
 			
 			inline void reset() {
@@ -77,37 +77,49 @@ namespace cplus {
 				usingState = 0;
 			}
 			
-			inline bool isBegin() { return usingState == 0 && unitArrayList.isBegin(); }
+			inline bool isBegin() const { return usingState == 0 && unitArrayList.isBegin(); }
 			
-			inline bool isEnd() { return usingState == endPoint && unitArrayList.isEnd(); }
+			inline bool isEnd() const { return usingState == endPoint && unitArrayList.isEnd(); }
 			
-			void forEach(const std::function<void(void)> &func) {
-				saveState();
-				reset();
-				do {
-					func();
-					next();
-				} while (!isBegin());
-				loadState();
+			void forEach(const std::function<void(T &)> &func) const {
+				List<T *> unitArrayList = this->unitArrayList;
+				auto usingState = this->usingState;
+				while (true) {
+					func(unitArrayList.get()[usingState]);
+					++usingState;
+					if (usingState >= blockSize) {
+						unitArrayList.next();
+						usingState = 0;
+					} else if (usingState == endPoint && unitArrayList.isEnd()) {
+						break;
+					}
+				}
+				::cplus::memory::copy(List<T *>(), unitArrayList);
 			}
 			
 			
-			void forEach(cplus::thread::Runnable runnable) {
-				saveState();
-				reset();
-				do {
-					runnable.run();
-					next();
-				} while (!isBegin());
-				loadState();
+			void forEach(cplus::thread::Runnable<T> runnable) {
+				auto unitArrayList = this->unitArrayList;
+				auto usingState = this->usingState;
+				while (true) {
+					runnable(unitArrayList.get()[usingState]);
+					++usingState;
+					if (usingState >= blockSize) {
+						unitArrayList.next();
+						usingState = 0;
+					} else if (usingState == endPoint && unitArrayList.isEnd()) {
+						break;
+					}
+				}
+				::cplus::memory::copy(List<T *>(), unitArrayList);
 			}
 			
 			T *toArray() {
 				if (array != nullptr) delete array;
 				array = new T[size()];
 				size_t p = 0;
-				forEach([&]() {
-					::cplus::memory::copy(get(), array[p++]);
+				forEach([&](T &value) {
+					::cplus::memory::copy(value, array[p++]);
 				});
 				return array;
 			};
@@ -115,43 +127,50 @@ namespace cplus {
 			std::unique_ptr<T[]> toSmartArray() {
 				std::unique_ptr<T[]> array(new T[size()]);
 				size_t p = 0;
-				forEach([&]() {
-					::cplus::memory::copy(get(), array[p++]);
+				forEach([&](T &value) {
+					::cplus::memory::copy(value, array[p++]);
 				});
+				::cplus::memory::copy(List<T *>(), unitArrayList);
 				return array;
 			};
 			
-			T &operator[](size_t location) {
-				saveState();
-				reset();
-				for (size_t n = static_cast<size_t>(floor((double) ((float) location) / blockSize)); n > 0; --n) {
-					next();
+			T &operator[](size_t location) const {
+				auto usingState = 0;
+				auto unitArrayList = this->unitArrayList;
+				unitArrayList.reset();
+				for (size_t n = static_cast<size_t>(floor((double) location / blockSize)); n > 0; --n) {
+					//to next
+					++usingState;
+					if (usingState >= blockSize) {
+						unitArrayList.next();
+						usingState = 0;
+					} else if (usingState == endPoint && unitArrayList.isEnd()) {
+						break;
+					}
 				}
 				size_t locate = location % blockSize;
-				loadState();
-				return unitArrayList.end()[locate];
+				auto block = unitArrayList.get();
+				::cplus::memory::copy(List<T *>(), unitArrayList);
+				return block[locate];
 			}
 			
 			size_t getBlockSize() { return blockSize; }
-			
-			//加载上次保存时的状态
-			inline void loadState() {
-				if (stateSave.size() == 0) return;
-				unitArrayList.loadState();
-				usingState = stateSave.pop();
-			}
-			
-			//保存状态
-			void saveState() {
-				stateSave.push(usingState);
-			}
 		
 		private:
+			
+			inline void constReset() const {
+				static size_t zer0 = 0;
+				static List<T *> listSwap;
+				::cplus::memory::swap(listSwap, unitArrayList);
+				listSwap.reset();
+				::cplus::memory::swap(listSwap, unitArrayList);
+				::cplus::memory::copy(zer0, usingState);
+			}
+			
 			T *array;
 			const size_t blockSize;
 			size_t endPoint;
 			size_t usingState;
-			Stack <size_t> stateSave; //用于储存上一次保存时的状态
 			List<T *> unitArrayList;
 		};
 	}

@@ -6,37 +6,36 @@
 #define CPLUS_THREAD_Thread_H
 
 #include <pthread.h>
+#include <utility>
+#include <unistd.h>
 #include "ThreadMutex.h"
 #include "Runnable.h"
-#include "../utils/ArrayStack.hpp"
+#include "../utils/List.hpp"
 
 namespace cplus {
 	namespace thread {
-		class Thread {
+		CPlusClass(Thread) {
 		public:
 			Thread() = default;
+
+//			explicit Thread(void (*func)()) : Thread((Runnable) VoidCall(func)) {}
 			
-			explicit Thread(void (*func)(void *)) : func(Runnable([&]() { (*func)(this); })) {
+			explicit Thread(std::function<void()> func) : func(std::move(func)) {
 				pidCountMutex.lock();
 				pid = pidCount++;
 				pidCountMutex.unlock();
 			}
 			
-			explicit Thread(void (*func)()) : func(Runnable(func)) {
-				pidCountMutex.lock();
-				pid = pidCount++;
-				pidCountMutex.unlock();
+			bool start();
+			
+			inline void detach() {
+				pthread_join(pthread, nullptr);
 			}
 			
-			explicit Thread(const Runnable &func) : func(func) {
-				pidCountMutex.lock();
-				pid = pidCount++;
-				pidCountMutex.unlock();
-			}
-			
-			inline bool start() {
-				_start();
-				pthread_detach(pthread);
+			void detachAll() {
+				pThreadStack.forEach([&](pthread_t pthread1) {
+					pthread_detach(pthread1);
+				});
 			}
 			
 			inline void join() {
@@ -44,8 +43,8 @@ namespace cplus {
 			}
 			
 			inline void joinAll() {
-				pThreadStack.forEach([&]() {
-					pthread_join(pThreadStack.get(), nullptr);
+				pThreadStack.forEach([&](pthread_t pthread1) {
+					pthread_join(pthread1, nullptr);
 				});
 			}
 			
@@ -56,14 +55,8 @@ namespace cplus {
 			inline const pid_t &getPID() {
 				return pid;
 			}
-
-//			inline void lockOutput() const {
-//				outputMutex.lock();
-//			}
-//
-//			inline void unlockOutput() const {
-//				outputMutex.unlock();
-//			}
+			
+			static pthread_t run(std::function<void()> func);
 			
 			inline static void lockOutput() {
 				outputMutex.lock();
@@ -72,19 +65,51 @@ namespace cplus {
 			inline static void unlockOutput() {
 				outputMutex.unlock();
 			}
+			
+			//休眠secs毫秒
+			static void msleep(unsigned int secs) {
+				timeval tval{};
+				tval.tv_sec = secs / 1000;
+				tval.tv_usec = (secs * 1000) % 1000000;
+				select(0, nullptr, nullptr, nullptr, &tval);
+			}
+			
+			//休眠secs微秒
+			inline static void usleep(unsigned int secs) {
+				::usleep(secs);
+			}
+			
+			//休眠secs秒
+			inline static void sleep(unsigned int secs) {
+				::sleep(secs);
+			}
 		
 		private:
-			pthread_t pthread{};
-			Runnable func;
+			/*class VoidCall : Runnable<void *> {
+			public:
+				VoidCall(void(*func)()) : func(func) {}
+
+				void run() override {
+					if (func != nullptr)func();
+				}
+
+			private:
+				void (*func)();
+			};*/
+			
+			pthread_t pthread;
+			std::function<void()> func;
 			pid_t pid;
-			static ::cplus::utils::ArrayStack<pthread_t> pThreadStack;
+			static ::cplus::utils::List<pthread_t> pThreadStack;
 			static pid_t pidCount;
 			static ThreadMutex pidCountMutex;
 			static ThreadMutex outputMutex;
 			
-			bool _start();
-			
 			friend void *threadStart(void *thread);
+		};
+		
+		template<typename T>
+		CPlusClass(SThread) {
 		};
 	}
 }

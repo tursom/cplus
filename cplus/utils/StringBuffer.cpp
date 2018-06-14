@@ -3,19 +3,19 @@
 //
 
 #include "StringBuffer.h"
-#include "String.h"
+#include "../lang/String.h"
 
 namespace cplus {
 	namespace utils {
-		StringBuffer &StringBuffer::append(const String &string) {
+		StringBuffer &StringBuffer::append(const ::cplus::lang::String &string) {
 			mutex.lock();
 			value.append(string.__stdString());
 			mutex.unlock();
 			return *this;
 		}
 		
-		String StringBuffer::toString() const {
-			return String(value);
+		::cplus::lang::String StringBuffer::toString() const {
+			return ::cplus::lang::String(value);
 		}
 	}
 }

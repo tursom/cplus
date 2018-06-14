@@ -9,10 +9,10 @@
 #define UNTITLED_TIME_H
 namespace cplus {
     namespace system {
-        ::cplus::utils::Long getCurrentTime() {
+        ::cplus::lang::Long getCurrentTime() {
             struct timeval tv;
             gettimeofday(&tv, nullptr);
-            return ::cplus::utils::Long(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+            return ::cplus::lang::Long(tv.tv_sec * 1000 + tv.tv_usec / 1000);
         }
     }
 }

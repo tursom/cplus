@@ -7,7 +7,7 @@
 #include "Long.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		String Object::toString() const {
 			std::string s;
 			s.append(typeid(*this).name());
@@ -18,7 +18,7 @@ namespace cplus {
 			return String(s);
 		}
 		
-		Object::operator ::cplus::utils::String() const {
+		Object::operator String() const {
 			return toString();
 		}
 	}

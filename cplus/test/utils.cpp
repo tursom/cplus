@@ -5,8 +5,9 @@
 #include "../utils/List.hpp"
 #include "../system/OutputStream.h"
 #include "../utils/ArrayList.hpp"
-#include "../utils/Char.h"
+#include "../lang/Char.h"
 
+using namespace ::cplus::lang;
 using namespace ::cplus::utils;
 using ::cplus::system::sout;
 using ::cplus::system::endl;
@@ -26,8 +27,8 @@ namespace cplus {
 			size_t listSize = 24;
 			for (int i = 0; i < listSize; ++i) {
 				list.append(i);
-				list.forEach([&]() {
-					sout << list.get() << endl;
+				list.forEach([&](int i) {
+					sout << i << endl;
 				});
 			}
 			sout << list.usedSize() << endl;
@@ -38,8 +39,8 @@ namespace cplus {
 			size_t listSize = 24;
 			for (int i = 0; i < listSize; ++i) {
 				list.append(i);
-				list.forEach([&]() {
-					sout << list.get() << endl;
+				list.forEach([&](int i) {
+					sout << i << endl;
 				});
 			}
 			sout << list.usedSize() << endl;
@@ -59,7 +60,7 @@ namespace cplus {
 					listArratMemorySize = list.usedSize();
 				}
 				{
-					List<int> list(0, 2097152);
+					List<int> list(2097152);
 					for (int i = 0; i < listSize; ++i) {
 						list.append(i);
 					}
@@ -84,15 +85,15 @@ namespace cplus {
 			for (int i = 0; i < stackSize; ++i) {
 				stack.push(i);
 			}
-			stack.forEach([&]() {
-				sout << stack.pop() << " ";
+			stack.forEach([&](int value) {
+				sout << value << " ";
 			});
 			sout << endl;
 			for (int i = stackSize; i > 0; --i) {
 				stack.push(i);
 			}
-			stack.forEach([&]() {
-				sout << stack.pop() << " ";
+			stack.forEach([&](int value) {
+				sout << value << " ";
 			});
 			sout << endl;
 			sout << stack.usedSize() << endl;

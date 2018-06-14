@@ -5,7 +5,7 @@
 #include "Char.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		String Char::toString() const {
 			char str[12];
 			sprintf(str, "%d", value);

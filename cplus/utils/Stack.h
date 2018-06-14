@@ -38,6 +38,10 @@ namespace cplus {
 			 * 遍历每一个节点并
 			 */
 			~Stack() {
+				if (lastState != nullptr) {
+					delete lastState;
+					lastState = nullptr;
+				}
 				auto stateSave = state;
 				while (state != nullptr) {//遍历所有元素
 					auto next = state; //储存上一个元素的地址
@@ -62,24 +66,28 @@ namespace cplus {
 			}
 			
 			const T &pop() {
+				if (lastState != nullptr) {
+					delete lastState;
+					lastState = nullptr;
+				}
 				if (stackSize != 0) {
-					::cplus::memory::copy(this->state->get(), lastValue);
-					auto state = this->state;
+					lastState = this->state;
 					this->state = this->state->prev();
-					delete state;
 					--stackSize;
 				}
-				return lastValue;
+				return lastState->get();
 			}
 			
 			bool pop(const T &buffer) {
+				if (lastState != nullptr) {
+					delete lastState;
+					lastState = nullptr;
+				}
 				if (stackSize != 0) {
-					::cplus::memory::copy(this->state->get(), lastValue);
-					auto state = this->state;
+					::cplus::memory::copy(this->state->get(), buffer);
+					lastState = this->state;
 					this->state = this->state->prev();
-					delete state;
 					--stackSize;
-					::cplus::memory::copy(lastValue, buffer);
 					return true;
 				} else {
 					return false;
@@ -88,41 +96,35 @@ namespace cplus {
 			
 			inline size_t size() const { return stackSize; }
 			
-			inline T &get() { return lastValue; }
+			size_t getMaxSize() const {
+				return maxSize;
+			}
 			
-			inline const T &get() const { return lastValue; }
+			inline T &get() { return state->get(); }
+			
+			inline const T &get() const { return state->get(); }
 			
 			inline void set(const T &value) { if (state != nullptr)state->set(value); }
 			
-			void forEach(const std::function<void(void)> &func) {
+			void forEach(std::function<void(T &)> func) const {
 				StackPoint *state = this->state;
 				while (state != nullptr) {
-					::cplus::memory::copy(state->get(), lastValue);
+					func(state->get());
 					state = state->prev();
-					func();
 				}
 			}
 			
-			void forEach(cplus::thread::Runnable runnable) {
-				StackPoint *state = this->state;
-				while (state != nullptr) {
-					::cplus::memory::copy(state->get(), lastValue);
-					state = state->prev();
-					runnable.run();
-				}
-			}
+			bool isFull() const { return stackSize == maxSize; }
 			
-			bool isFull() { return stackSize == maxSize; }
+			bool isVoid() const { return stackSize == 0; }
 			
-			bool isVoid() { return stackSize == 0; }
+			inline size_t pointSize() const { return sizeof(StackPoint); }
 			
-			inline size_t pointSize() { return sizeof(StackPoint); }
-			
-			inline size_t usedSize() {
+			inline size_t usedSize() const {
 				return sizeof(*this) + sizeof(StackPoint) * size();
 			}
 			
-			inline String toString() const override {
+			inline ::cplus::lang::String toString() const override {
 				StringBuilder stringBuilder;
 				stringBuilder.append("cplus::utils::Stack(");
 				stringBuilder.append("stack size:");
@@ -160,9 +162,10 @@ namespace cplus {
 				StackPoint *preview;
 			};
 			
+			
 			size_t maxSize;
 			StackPoint *state;
-			T lastValue;
+			StackPoint *lastState;
 			size_t stackSize;
 		};
 	}

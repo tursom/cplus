@@ -7,7 +7,7 @@
 #include "Float.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		String Long::toString() const {
 			char str[22];
 			sprintf(str, "%li", value);

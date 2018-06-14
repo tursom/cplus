@@ -12,7 +12,7 @@
 #include "../tools/class.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		CPlusClass(Short) {
 		public:
 			explicit Short(int16_t value) : value(value) {}

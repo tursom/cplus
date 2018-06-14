@@ -9,14 +9,14 @@
 #include <ostream>
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		class String;
 		
 		class Object {
 		public:
 			virtual String toString() const;
 			
-			explicit virtual operator ::cplus::utils::String() const;
+			explicit virtual operator String() const;
 
 //            friend std::ostream &operator<<(std::ostream &os, const Object &object);
 		};

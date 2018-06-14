@@ -28,9 +28,9 @@ namespace cplus {
 			}
 			
 			~ArrayStack() {
-				blockArrayStack.forEach([&]() { //遍历每一个数据块
+				blockArrayStack.forEach([&](T *block) { //遍历每一个数据块
 					//释放每一个数据块的内存
-					delete[] blockArrayStack.pop();
+					delete[] block;
 				});
 			}
 			
@@ -39,6 +39,11 @@ namespace cplus {
 				if (endPoint == blockSize) {
 					//保存last状态
 					auto lastSave = last;
+					//释放内存
+					if (lastState != nullptr) {
+						delete lastState;
+						lastState = nullptr;
+					}
 					//分配内存
 					last = new T[blockSize];
 					//压入数据块栈
@@ -64,18 +69,22 @@ namespace cplus {
 			
 			const T &pop() {
 				//检查是否还有剩余元素
-				if (endPoint == 0) return lastValue; //如果没有则返回最后的缓存
+				if (endPoint == 0) return nullptr; //如果没有则返回最后的缓存
 				
+				T lastValue;
 				//使用黑魔法获取数据
 				::cplus::memory::copy(last[--endPoint], lastValue);
 				
 				//检查是否已到数据块边界
 				if (endPoint == 0) {
 					//释放内存
-					auto t = blockArrayStack.pop();
-					delete t;
+					if (lastState != nullptr) {
+						delete lastState;
+						lastState = nullptr;
+					}
 					
 					//更新last状态
+					lastState = blockArrayStack.pop();
 					if (blockArrayStack.pop(last)) {
 						//成功
 						blockArrayStack.push(last);
@@ -92,8 +101,7 @@ namespace cplus {
 				if (endPoint == 0) return false; //如果没有则返回最后的缓存
 				
 				//使用黑魔法获取和更新数据
-				::cplus::memory::copy(last[--endPoint], lastValue);
-				::cplus::memory::copy(lastValue, buffer);
+				::cplus::memory::copy(last[--endPoint], buffer);
 				
 				//检查是否已到数据块边界
 				if (endPoint == 0) {
@@ -118,9 +126,9 @@ namespace cplus {
 			
 			bool isFull() { return endPoint == blockSize && blockArrayStack.isFull(); }
 			
-			inline T &get() { return lastValue; }
+			inline T &get() { return last[endPoint]; }
 			
-			inline const T &get() const { return lastValue; }
+			inline const T &get() const { return last[endPoint]; }
 			
 			inline size_t size() { return blockSize * (blockArrayStack.size() - 1) + endPoint; }
 			
@@ -131,37 +139,24 @@ namespace cplus {
 			
 			size_t getBlockSize() { return blockSize; }
 			
-			void forEach(const std::function<void(void)> &func) {
-				blockArrayStack.forEach([&]() {
-					size_t state = blockSize;
-					if (blockArrayStack.get() == last) {
-						state = endPoint;
-					}
-					while (state > 0) {
-						::cplus::memory::copy(blockArrayStack.get()[state - 1], lastValue);
-						func();
-						state--;
-					}
-				});
-			}
-			
-			void forEach(cplus::thread::Runnable runnable) {
-				blockArrayStack.forEach([&]() {
-					size_t state = blockSize;
-					if (blockArrayStack.get() == last) {
-						state = endPoint;
-					}
-					while (state > 0) {
-						::cplus::memory::copy(blockArrayStack.get()[state - 1], lastValue);
-						runnable.run();
-						state--;
+			void forEach(const std::function<void(T &value)> &func) const {
+				size_t endPoint;
+				bool isEndPoint = true;
+				blockArrayStack.forEach( [&](T *&block) {
+					if (isEndPoint) {
+						endPoint = this->endPoint;
+						isEndPoint = false;
+					} else endPoint = this->blockSize;
+					while (endPoint > 0) {
+						func(block[--endPoint]);
+						std::cout << endPoint << std::endl;
 					}
 				});
 			}
 			
 			size_t size() const { return blockSize * (blockArrayStack.size() - 1) + endPoint - 1; }
 			
-			inline String toString() const override {
+			inline ::cplus::lang::String toString() const override {
 				StringBuilder stringBuilder;
 				stringBuilder.append("cplus::utils::ArrayStack(");
 				stringBuilder.append("size:");
@@ -174,7 +169,7 @@ namespace cplus {
 			const size_t blockSize;
 			size_t endPoint;
 			T *last;
-			T lastValue;
+			T *lastState;
 			Stack<T *> blockArrayStack;
 		};
 	}

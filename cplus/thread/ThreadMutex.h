@@ -16,12 +16,12 @@ namespace cplus{
 				pthread_mutex_init(&mutex, nullptr);
 			}
 			
-			void lock() {
-				pthread_mutex_lock(&mutex);
+			inline int lock() {
+				return pthread_mutex_lock(&mutex);
 			}
 			
-			void unlock() {
-				pthread_mutex_unlock(&mutex);
+			inline int unlock() {
+				return pthread_mutex_unlock(&mutex);
 			}
 		
 		private:

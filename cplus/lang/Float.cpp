@@ -6,7 +6,7 @@
 #include "String.h"
 
 namespace cplus {
-	namespace utils {
+	namespace lang {
 		String Float::toString() const {
 			char str[20];
 			sprintf(str, "%e", value);
