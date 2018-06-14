@@ -11,6 +11,8 @@
 #include "../memory/dark_magic.h"
 #include "../thread/Runnable.h"
 
+typedef unsigned int cplus_stack_size_t;
+
 namespace cplus {
 	namespace utils {
 		/**
@@ -22,6 +24,7 @@ namespace cplus {
 		template<typename T>
 		CPlusClass(Stack) {
 		public:
+			
 			/**
 			 * Stack默认构造函数<br>
 			 * 将构造任务传递给Stack(1024)，实现默认最大节点数为1024<br>
@@ -31,7 +34,7 @@ namespace cplus {
 			/**
 			 * @param maxSize 最大节点数量
 			 */
-			explicit Stack(size_t maxSize) : state(nullptr), stackSize(0), maxSize(maxSize) {}
+			explicit Stack(cplus_stack_size_t maxSize) : state(nullptr), stackSize(0), maxSize(maxSize) {}
 			
 			/**
 			 * Stack析构函数
@@ -94,9 +97,9 @@ namespace cplus {
 				}
 			}
 			
-			inline size_t size() const { return stackSize; }
+			inline cplus_stack_size_t size() const { return stackSize; }
 			
-			size_t getMaxSize() const {
+			cplus_stack_size_t getMaxSize() const {
 				return maxSize;
 			}
 			
@@ -118,9 +121,9 @@ namespace cplus {
 			
 			bool isVoid() const { return stackSize == 0; }
 			
-			inline size_t pointSize() const { return sizeof(StackPoint); }
+			inline cplus_stack_size_t pointSize() const { return sizeof(StackPoint); }
 			
-			inline size_t usedSize() const {
+			inline cplus_stack_size_t usedSize() const {
 				return sizeof(*this) + sizeof(StackPoint) * size();
 			}
 			
@@ -128,7 +131,7 @@ namespace cplus {
 				StringBuilder stringBuilder;
 				stringBuilder.append("cplus::utils::Stack(");
 				stringBuilder.append("stack size:");
-				stringBuilder.append(size());
+				stringBuilder.append((long) size());
 				stringBuilder.append(")");
 				return stringBuilder.toString();
 			}
@@ -163,10 +166,10 @@ namespace cplus {
 			};
 			
 			
-			size_t maxSize;
+			cplus_stack_size_t maxSize;
 			StackPoint *state;
 			StackPoint *lastState;
-			size_t stackSize;
+			cplus_stack_size_t stackSize;
 		};
 	}
 }

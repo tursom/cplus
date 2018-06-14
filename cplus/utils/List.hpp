@@ -12,14 +12,17 @@
 #include "../memory/dark_magic.h"
 #include "../thread/Runnable.h"
 
+typedef unsigned int cplus_list_size_t;
+
 namespace cplus {
 	namespace utils {
 		template<typename T>
 		CPlusClass(List) {
 		public:
+			
 			List() : List(10240) {}
 			
-			explicit List(size_t maxSize) : state(nullptr), listSize(0), maxSize(maxSize), array(nullptr) {
+			explicit List(cplus_list_size_t maxSize) : state(nullptr), listSize(0), maxSize(maxSize), array(nullptr) {
 				listBegin = state;
 				listEnd = state;
 				preview = state;
@@ -48,7 +51,7 @@ namespace cplus {
 				return true;
 			}
 			
-			inline size_t size() const { return listSize; }
+			inline cplus_list_size_t size() const { return listSize; }
 			
 			inline void reset() {
 				state = listBegin;
@@ -109,16 +112,16 @@ namespace cplus {
 				}
 			}
 			
-			inline size_t pointSize() const { return sizeof(ListPoint); }
+			inline cplus_list_size_t pointSize() const { return sizeof(ListPoint); }
 			
-			inline size_t usedSize() const {
+			inline cplus_list_size_t usedSize() const {
 				return sizeof(*this) + sizeof(ListPoint) * size();
 			}
 			
 			T *toArray() {
 				if (array != nullptr) delete array;
 				array = new T[size()];
-				size_t p = 0;
+				cplus_list_size_t p = 0;
 				forEach([&](T &value) {
 					::cplus::memory::copy(value, array[p++]);
 				});
@@ -127,7 +130,7 @@ namespace cplus {
 			
 			std::unique_ptr<T[]> toSmartArray() {
 				std::unique_ptr<T[]> array(new T[size()]);
-				size_t p = 0;
+				cplus_list_size_t p = 0;
 				forEach([&](T &value) {
 					::cplus::memory::copy(value, array[p++]);
 				});
@@ -138,7 +141,7 @@ namespace cplus {
 				StringBuilder stringBuilder;
 				stringBuilder.append("cplus::utils::List(");
 				stringBuilder.append("size:");
-				stringBuilder.append(size());
+				stringBuilder.append((long) size());
 				stringBuilder.append(")");
 				return stringBuilder.toString();
 			}
@@ -205,8 +208,8 @@ namespace cplus {
 			ListPoint *listEnd;
 			ListPoint *preview;
 			ListPoint *state;
-			size_t listSize;
-			size_t maxSize;
+			cplus_list_size_t listSize;
+			cplus_list_size_t maxSize;
 		};
 	}
 }

@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <map>
 #include <algorithm>
+#include <w32api/profileapi.h>
 #include "cplus/lang/String.h"
 #include "cplus/lang/Int.h"
 #include "cplus/system/time.h"
@@ -250,14 +251,15 @@ void println(const T &message) {
 	Thread::unlockOutput();
 }
 
+void println(int &i) {
+}
+
 class TestClass {
 public:
 	TestClass() : outList([=]() {
-		arrayStack.forEach([](int &i) {
-			std::cout << i << std::endl;
-		});
+		arrayStack.forEach((void (*)(int &)) println);
 	}), arrayStack() {
-		for (int i = 0; i < 100; i++) arrayStack.append(i);
+		for (int i = 0; i < 100000; i++) arrayStack.append(i);
 	}
 	
 	ArrayList<int> arrayStack;
@@ -267,38 +269,20 @@ public:
 static TestClass testClass;
 
 int main() {
-	testClass.outList.start();
-	testClass.outList.start();
+	LARGE_INTEGER t1;
+	QueryPerformanceCounter(&t1);
+	for (int i = 0; i < 100000; i++) println(i);
+	LARGE_INTEGER t2;
+	QueryPerformanceCounter(&t2);
+	std::cout << t2.QuadPart - t1.QuadPart << std::endl;
+	LARGE_INTEGER t3;
+	QueryPerformanceCounter(&t3);
+	testClass.arrayStack.forEach((void (*)(int &)) println);
+	LARGE_INTEGER t4;
+	QueryPerformanceCounter(&t4);
+	std::cout << t4.QuadPart - t3.QuadPart << std::endl;
+	std::cout << std::endl;
 	testClass.outList.detachAll();
 	pthread_exit(nullptr);
-//	println(arrayStack[5]);
-
-//		auto func = [](void *) -> void * {
-//		static int times = 0;
-//		Thread::lockOutput();
-//		try {
-//			std::cout << "Hello World! in " << times++ << " times!" << std::endl;
-//		} catch (std::exception e) {
-//			std::cerr << e.what();
-//		}
-//		Thread::unlockOutput();
-//	};
-//	pthread_t pthread1;
-//	pthread_create(&pthread1, nullptr, func, nullptr);
-//	pthread_create(&pthread1, nullptr, func, nullptr);
-//	pthread_create(&pthread1, nullptr, func, nullptr);
-	/*Thread thread([]() {
-		static int times = 0;
-		Thread::lockOutput();
-		std::cout << "Hello World! in " << times++ << " times!" << std::endl;
-		Thread::unlockOutput();
-	});
-	for (int i = 0; i < 100; i++)
-		thread.start();
-	usleep(1000 * 1000);
-	std::cout << "thread start comply" << std::endl;
-//	thread.joinAll();
-	usleep(1000 * 1000);
-	std::cout << "thread sleep comply" << std::endl;*/
 	return 0;
 }
