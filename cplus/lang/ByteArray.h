@@ -8,8 +8,8 @@
 
 #include <cstdlib>
 #include <exception>
-#include "../tools/class.h"
 #include "String.h"
+#include "../tools/class.h"
 #include "../utils/StringBuilder.h"
 
 namespace cplus {
@@ -36,7 +36,7 @@ namespace cplus {
 					buffer[index] = 0;
 			}
 			
-			size_t indexOf(int8_t byte) {
+			size_t indexOf(int8_t byte)const {
 				for (size_t index = 0; index < size; index++) {
 					if (buffer[index] == byte)
 						return index;

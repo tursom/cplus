@@ -23,7 +23,7 @@ namespace cplus {
 			
 			explicit Thread(std::function<void()> func) : Thread(RunnableBase<void *>([&](void *) { func(); })) {}
 			
-			explicit Thread(Runnable func) : Thread((RunnableBase<void *>) std::move(func)) {}
+			explicit Thread(Runnable func) : Thread((RunnableBase<void *>) func) {}
 			
 			explicit Thread(RunnableBase<void *> func) : func(std::move(func)) {
 				pidCountMutex.lock();
@@ -47,7 +47,7 @@ namespace cplus {
 			/**
 			 * 释放所有线程
 			 */
-			void detachAll() {
+			static void detachAll() {
 				pThreadStack.forEach([&](pthread_t pthread1) {
 					pthread_detach(pthread1);
 				});
@@ -63,7 +63,7 @@ namespace cplus {
 			/**
 			 * 逐一合并线程
 			 */
-			inline void joinAll() {
+			static inline void joinAll() {
 				pThreadStack.forEach([&](pthread_t pthread1) {
 					pthread_join(pthread1, nullptr);
 				});
@@ -126,18 +126,6 @@ namespace cplus {
 			}
 		
 		private:
-			/*class VoidCall : RunnableBase<void *> {
-			public:
-				VoidCall(void(*func)()) : func(func) {}
-
-				void run() override {
-					if (func != nullptr)func();
-				}
-
-			private:
-				void (*func)();
-			};*/
-			
 			pthread_t pthread{};
 			RunnableBase<void *> func;
 			pid_t pid;

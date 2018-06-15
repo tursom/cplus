@@ -8,6 +8,7 @@
 #include <strings.h>
 #include "../tools/class.h"
 #include "Socket.h"
+#include "../lang/Long.h"
 
 namespace cplus {
 	namespace socket {
@@ -18,14 +19,16 @@ namespace cplus {
 			explicit SocketServer(uint16_t port) {
 				//把socket和socket地址结构联系起来
 				if (bind(port)) {
-					printf("Server Bind Port : %d Failed!", port);
-					exit(1);
+					throw ServerException("Server Bind Port : " + lang::Long(port).toString() + " Failed!");
 				}
 				//server_socket用于监听
 				if (listen()) {
-					printf("Server Listen Failed!");
-					exit(1);
+					throw ServerException("Server Listen Failed!");
 				}
+			}
+			
+			~SocketServer() {
+				close();
 			}
 			
 			int listen() {
@@ -46,8 +49,7 @@ namespace cplus {
 				//创建用于internet的流协议(TCP)socket,用server_socket代表服务器socket
 				server_socket = ::socket(PF_INET, SOCK_STREAM, 0);
 				if (server_socket < 0) {
-					printf("Create Socket Failed!");
-					throw (CreateFailedException());
+					throw ServerException("Create Socket Failed!");
 				}
 				int opt = 1;
 				setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -74,10 +76,16 @@ namespace cplus {
 					throw AcceptFailedException();
 				}
 				
-				return {new_server_socket, client_addr};
+				return {new_server_socket, client_addr, server_addr};
 			}
 			
-			class ServerException : public std::exception {
+			class ServerException : public system::Exception {
+			public:
+				ServerException() = default;
+				
+				explicit ServerException(const char *message);
+				
+				explicit ServerException(const lang::String &message);
 			};
 			
 			class CreateFailedException : public ServerException {

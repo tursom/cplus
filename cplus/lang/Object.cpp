@@ -2,6 +2,7 @@
 // Created by Tursom Ulefits on 2018/5/16.
 //
 
+#include <memory>
 #include "Object.h"
 #include "String.h"
 #include "Long.h"

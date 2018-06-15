@@ -23,7 +23,7 @@ namespace cplus {
 				if (func != nullptr)func(value);
 			}
 			
-			void operator()(T &value) const { run(value); }
+			virtual void operator()(T &value) const { run(value); }
 		
 		private:
 			std::function<void(T)> func;

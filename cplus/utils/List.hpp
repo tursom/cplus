@@ -6,6 +6,7 @@
 #define CPLUS_UTILS_LIST_HPP
 
 #include <functional>
+#include <memory>
 #include "StringBuilder.h"
 #include "Stack.h"
 #include "../tools/class.h"
@@ -190,18 +191,6 @@ namespace cplus {
 				T value;
 				ListPoint *nextAndPrev;
 			};
-			
-			inline void constReset() const {
-				::cplus::memory::copy(listBegin, state);
-				::cplus::memory::copy(listEnd, preview);
-			}
-			
-			inline void constNext() const {
-				auto next = state->next(preview);
-				::cplus::memory::copy(state, preview);
-				::cplus::memory::copy(next, state);
-			}
-			
 			
 			T *array;
 			ListPoint *listBegin;

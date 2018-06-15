@@ -5,5 +5,13 @@
 #include "ServerSocket.h"
 
 namespace cplus {
-	namespace socket {}
+	namespace socket {
+		SocketServer::ServerException::ServerException(const char *message) : Exception(message) {
+		
+		}
+		
+		SocketServer::ServerException::ServerException(const lang::String &message) : Exception(message) {
+		
+		}
+	}
 }

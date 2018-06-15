@@ -16,6 +16,8 @@ namespace cplus {
 			Runnable() : RunnableBase() {}
 			
 			explicit Runnable(std::function<void()> func) : RunnableBase([&](void *) { func(); }) {}
+		private:
+		
 		};
 	}
 }

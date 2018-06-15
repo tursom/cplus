@@ -6,18 +6,22 @@
 #define CPLUS_UTILS_String_H
 
 #include <string>
-#include <utility>
-#include <memory>
 #include <set>
 #include "../tools/class.h"
 
 namespace cplus {
 	namespace lang {
+		class ByteArray;
+		
 		CPlusClass(String) {
 		public:
-			explicit String(const char *&str);
+			String();
+			
+			explicit String(const char *str);
 			
 			explicit String(const std::string &str);
+			
+			explicit String(const ByteArray &buffer);
 			
 			String toString() const override;
 			
@@ -39,26 +43,13 @@ namespace cplus {
 			 */
 			const std::string &stdString() const { return *value; }
 			
-			static std::string binToString(long value, char size = 64) {
-//	StringBuilder sb;
-				std::string sb;
-				for (int i = 0; i < size; i++) {
-					sb = (((value >> i) & 0x1) == 0 ? "0" : "1") + sb;
-				}
-				return sb;
-			}
+			bool operator==(const String &rhs) const;
 			
-			static std::string binToHex(long value, char size = 64) {
-//	StringBuilder sb;
-				char str[] = {
-						'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-				};
-				std::string sb;
-				for (int i = 0; (i * 4) < size; i++) {
-					sb = str[(value >> (i * 4)) & 0xf] + sb;
-				}
-				return "0x" + sb;
-			}
+			bool operator!=(const String &rhs) const;
+			
+			String operator+(const std::string &str1);
+			
+			friend String operator+(const std::string &str1, const String &str2);
 		
 		private:
 			const std::string *value{};
