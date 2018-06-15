@@ -1,35 +1,23 @@
 //
-// Created by Tursom Ulefits on 2018/5/20.
+// Created by Tursom Ulefits on 2018/6/14.
 //
 
 #ifndef CPLUS_RUNNABLE_H
 #define CPLUS_RUNNABLE_H
 
+
 #include <functional>
-#include <iostream>
-#include <utility>
-#include "../tools/class.h"
+#include "RunnableBase.h"
 
 namespace cplus {
 	namespace thread {
-		template<typename T>
-		CPlusClass(Runnable) {
+		class Runnable : public RunnableBase<void *> {
 		public:
-			Runnable() : func(nullptr) {}
+			Runnable() : RunnableBase() {}
 			
-			explicit Runnable(std::function<void(T)> func) : func(func) {}
-			
-			virtual void run(T value) const {
-				if (func != nullptr)func(value);
-			}
-			
-			void operator()(T &value) const { run(value); }
-		
-		private:
-			std::function<void(T)> func;
+			explicit Runnable(std::function<void()> func) : RunnableBase([&](void *) { func(); }) {}
 		};
 	}
 }
-
 
 #endif //CPLUS_RUNNABLE_H

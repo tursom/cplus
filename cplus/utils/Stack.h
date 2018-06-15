@@ -9,7 +9,7 @@
 #include "StringBuilder.h"
 #include "../tools/class.h"
 #include "../memory/dark_magic.h"
-#include "../thread/Runnable.h"
+#include "../thread/RunnableBase.h"
 
 typedef unsigned int cplus_stack_size_t;
 

@@ -9,7 +9,7 @@ namespace cplus {
 	namespace utils {
 		StringBuffer &StringBuffer::append(const ::cplus::lang::String &string) {
 			mutex.lock();
-			value.append(string.__stdString());
+			value.append(string.stdString());
 			mutex.unlock();
 			return *this;
 		}

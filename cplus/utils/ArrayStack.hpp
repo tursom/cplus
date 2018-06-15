@@ -9,7 +9,7 @@
 #include "Stack.h"
 #include "../tools/class.h"
 #include "../memory/dark_magic.h"
-#include "../thread/Runnable.h"
+#include "../thread/RunnableBase.h"
 
 namespace cplus {
 	namespace utils {

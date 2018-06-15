@@ -10,7 +10,7 @@
 #include "Stack.h"
 #include "../tools/class.h"
 #include "../memory/dark_magic.h"
-#include "../thread/Runnable.h"
+#include "../thread/RunnableBase.h"
 
 typedef unsigned int cplus_list_size_t;
 
@@ -99,7 +99,7 @@ namespace cplus {
 				}
 			}
 			
-			void forEach(cplus::thread::Runnable<T &> runnable) const {
+			void forEach(cplus::thread::RunnableBase<T &> runnable) const {
 				auto state = listBegin;
 				auto preview = listEnd;
 				if (state != nullptr) {

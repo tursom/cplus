@@ -12,7 +12,7 @@ namespace cplus {
 		::cplus::utils::List<pthread_t>  Thread::pThreadStack(16);
 		
 		void *threadStart(void *thread) {
-			((Thread *) thread)->func();
+			((Thread *) thread)->func(thread);
 		}
 		
 		void *staticThreadStart(void *thread) {

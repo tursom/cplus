@@ -12,7 +12,7 @@ namespace cplus {
 	namespace system {
 		const ::cplus::system::OutputStream &
 		::cplus::system::OutputStream::operator<<(const ::cplus::lang::Object &object) const {
-			(*os) << object.toString().__stdString();
+			(*os) << object.toString().stdString();
 			return *this;
 		}
 		
