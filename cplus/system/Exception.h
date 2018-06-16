@@ -10,8 +10,11 @@
 
 
 namespace cplus {
+	namespace lang {
+		class String;
+	}
 	namespace system {
-		CPlusClass(Exception), public std::exception {
+		CPlusClass(Exception) {
 		public:
 			Exception() = default;
 			

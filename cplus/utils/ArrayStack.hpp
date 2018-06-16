@@ -18,9 +18,9 @@ namespace cplus {
 		public:
 			ArrayStack() : ArrayStack(128) {}
 			
-			explicit ArrayStack(cplus_stack_size_t blockSize) : ArrayStack(blockSize, 800) {}
+			explicit ArrayStack(cplus_queue_size_t blockSize) : ArrayStack(blockSize, 800) {}
 			
-			explicit ArrayStack(cplus_stack_size_t blockSize, cplus_stack_size_t maxBlock)
+			explicit ArrayStack(cplus_queue_size_t blockSize, cplus_queue_size_t maxBlock)
 					: blockSize(blockSize), endPoint(0),
 					  blockArrayStack(maxBlock) {
 				last = new T[blockSize];
@@ -130,17 +130,17 @@ namespace cplus {
 			
 			inline const T &get() const { return last[endPoint]; }
 			
-			inline cplus_stack_size_t size() { return blockSize * (blockArrayStack.size() - 1) + endPoint; }
+			inline cplus_queue_size_t size() { return blockSize * (blockArrayStack.size() - 1) + endPoint; }
 			
 			// used memory size
-			inline cplus_stack_size_t usedSize() {
+			inline cplus_queue_size_t usedSize() {
 				return sizeof(*this) + blockArrayStack.usedSize() + sizeof(T) * blockSize * blockArrayStack.size();
 			}
 			
-			cplus_stack_size_t getBlockSize() { return blockSize; }
+			cplus_queue_size_t getBlockSize() { return blockSize; }
 			
 			void forEach(const std::function<void(T &value)> &func) const {
-				cplus_stack_size_t endPoint;
+				cplus_queue_size_t endPoint;
 				bool isEndPoint = true;
 				blockArrayStack.forEach([&](T *&block) {
 					if (isEndPoint) {
@@ -153,7 +153,7 @@ namespace cplus {
 				});
 			}
 			
-			cplus_stack_size_t size() const { return blockSize * (blockArrayStack.size() - 1) + endPoint - 1; }
+			cplus_queue_size_t size() const { return blockSize * (blockArrayStack.size() - 1) + endPoint - 1; }
 			
 			inline ::cplus::lang::String toString() const override {
 				StringBuilder stringBuilder;
@@ -165,8 +165,8 @@ namespace cplus {
 			}
 		
 		private:
-			const cplus_stack_size_t blockSize;
-			cplus_stack_size_t endPoint;
+			const cplus_queue_size_t blockSize;
+			cplus_queue_size_t endPoint;
 			T *last;
 			T *lastState;
 			Stack<T *> blockArrayStack;

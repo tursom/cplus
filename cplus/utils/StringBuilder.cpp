@@ -5,6 +5,8 @@
 #include "StringBuilder.h"
 #include "../lang/Long.h"
 #include "../lang/Double.h"
+#include "../lang/String.h"
+#include "../lang/CPlusString.h"
 
 
 namespace cplus {
@@ -42,6 +44,11 @@ namespace cplus {
 			char str[20];
 			sprintf(str, "%lu", value);
 			this->value.append(str);
+			return *this;
+		}
+		
+		StringBuilder &StringBuilder::append(const lang::CPlusString &value) {
+			this->value.append(value.toString().c_str());
 			return *this;
 		}
 	}

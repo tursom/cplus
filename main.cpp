@@ -45,29 +45,58 @@ public:
 	}
 };
 
+void throwAnException() {
+	throw Exception("test hello");
+}
+
 int main() {
-	ServerHandler serverHandler;
-	Thread([]() {
-		try {
-			u_int16_t port = 12346;
-			SocketServer server(port);
-			ByteArray recv(1024);
-			std::cout << "server started at port " << port << std::endl;
-			while (true) {
-				auto socket = server.accept();
-				std::cout << "get connection on: " << socket.getAddress().stdString()
-				          << ":" << socket.getPort() << std::endl;
-				socket.recv(recv);
-				socket.send(recv);
-				std::cout << String(recv).stdString() << std::endl;
-				std::cout << recv.toHexString().stdString() << std::endl;
-				if (String(recv.getBuffer()) == String("exit"))
-					break;
-			}
-		} catch (SocketServer::ServerException e) {
-			std::cerr << e.getMessage().stdString() << std::endl;
-		}
-	}).start();
-	Thread::detachAll();
-	Thread::exitThread();
+	Set<int> s;
+	for (int i = 0; i < 100; ++i) {
+		s.insert(i);
+	}
+	for (int i = 0; i < 100; ++i) {
+		auto find = s.find(i);
+		std::cout << ((find == nullptr) ? 0 : *find) << std::endl;
+	}
+	
+	try {
+		std::cout << std::string("12345").size() << std::endl;
+		String s1("123"), s2("123");
+		std::cout << (s1.c_str() == s2.c_str() ? "true" : "false") << std::endl;
+		String s3("1234"), s4("1234");
+		std::cout << (s3.c_str() == s4.c_str() ? "true" : "false") << std::endl;
+	} catch (Exception e) {
+		std::cerr << e.getMessage().stdString() << std::endl;
+		exit(1);
+	}
+	
+	try {
+		throwAnException();
+	} catch (Exception e) {
+		std::cerr << e.getMessage().stdString() << std::endl;
+	}
+//	ServerHandler serverHandler;
+//	Thread([]() {
+//		try {
+//			u_int16_t port = 12346;
+//			SocketServer server(port);
+//			ByteArray recv(1024);
+//			std::cout << "server started at port " << port << std::endl;
+//			while (true) {
+//				auto socket = server.accept();
+//				std::cout << "get connection on: " << socket.getAddress().stdString()
+//				          << ":" << socket.getPort() << std::endl;
+//				socket.recv(recv);
+//				socket.send(recv);
+//				std::cout << String(recv).stdString() << std::endl;
+//				std::cout << recv.toHexString().stdString() << std::endl;
+//				if (String(recv.getBuffer()) == String("exit"))
+//					break;
+//			}
+//		} catch (SocketServer::ServerException e) {
+//			std::cerr << e.getMessage().stdString() << std::endl;
+//		}
+//	}).start();
+//	Thread::detachAll();
+//	Thread::exitThread();
 }

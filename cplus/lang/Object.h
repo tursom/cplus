@@ -10,6 +10,7 @@
 
 namespace cplus {
 	namespace lang {
+		class CPlusString;
 		class String;
 		
 		class Object {

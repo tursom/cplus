@@ -13,6 +13,8 @@ namespace cplus {
 	namespace lang {
 		class ByteArray;
 		
+		class CPlusString;
+		
 		CPlusClass(String) {
 		public:
 			String();
@@ -31,7 +33,7 @@ namespace cplus {
 			 * 不保证时间复杂度位常数
 			 * @return
 			 */
-			const char *c_str() const { return value->c_str(); }
+			const char *c_str() const;
 			
 			String &operator=(const String &string);
 			
@@ -41,7 +43,7 @@ namespace cplus {
 			 * 不保证向下兼容性
 			 * @return 一个对应的标准库的string对象
 			 */
-			const std::string &stdString() const { return *value; }
+			std::string stdString() const;
 			
 			bool operator==(const String &rhs) const;
 			
@@ -52,9 +54,7 @@ namespace cplus {
 			friend String operator+(const std::string &str1, const String &str2);
 		
 		private:
-			const std::string *value{};
-			
-			static inline std::set<std::string> getStringSet();
+			const CPlusString *value{};
 		};
 	}
 }

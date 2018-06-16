@@ -8,7 +8,6 @@
 
 #include <string>
 #include "../tools/class.h"
-#include "../lang/String.h"
 
 namespace cplus {
 	namespace utils {
@@ -27,10 +26,11 @@ namespace cplus {
 			StringBuilder &append(double value);
 			
 			::cplus::lang::String toString() const override;
+			
+			StringBuilder &append(const lang::CPlusString &value);
 		
 		private:
 			std::string value;
-			
 		};
 	}
 }

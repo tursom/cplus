@@ -7,11 +7,12 @@
 
 #include <functional>
 #include "StringBuilder.h"
+#include "../lang/String.h"
 #include "../tools/class.h"
 #include "../memory/dark_magic.h"
 #include "../thread/RunnableBase.h"
 
-typedef unsigned int cplus_stack_size_t;
+typedef unsigned int cplus_queue_size_t;
 
 namespace cplus {
 	namespace utils {
@@ -34,7 +35,7 @@ namespace cplus {
 			/**
 			 * @param maxSize 最大节点数量
 			 */
-			explicit Stack(cplus_stack_size_t maxSize) : state(nullptr), stackSize(0), maxSize(maxSize) {}
+			explicit Stack(cplus_queue_size_t maxSize) : state(nullptr), stackSize(0), maxSize(maxSize) {}
 			
 			/**
 			 * Stack析构函数
@@ -97,9 +98,9 @@ namespace cplus {
 				}
 			}
 			
-			inline cplus_stack_size_t size() const { return stackSize; }
+			inline cplus_queue_size_t size() const { return stackSize; }
 			
-			cplus_stack_size_t getMaxSize() const {
+			cplus_queue_size_t getMaxSize() const {
 				return maxSize;
 			}
 			
@@ -121,9 +122,9 @@ namespace cplus {
 			
 			bool isVoid() const { return stackSize == 0; }
 			
-			inline cplus_stack_size_t pointSize() const { return sizeof(StackPoint); }
+			inline cplus_queue_size_t pointSize() const { return sizeof(StackPoint); }
 			
-			inline cplus_stack_size_t usedSize() const {
+			inline cplus_queue_size_t usedSize() const {
 				return sizeof(*this) + sizeof(StackPoint) * size();
 			}
 			
@@ -166,10 +167,10 @@ namespace cplus {
 			};
 			
 			
-			cplus_stack_size_t maxSize;
+			cplus_queue_size_t maxSize;
 			StackPoint *state;
 			StackPoint *lastState;
-			cplus_stack_size_t stackSize;
+			cplus_queue_size_t stackSize;
 		};
 	}
 }
