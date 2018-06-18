@@ -3,6 +3,7 @@
 //
 
 #include "Int.h"
+#include "String.h"
 
 namespace cplus {
 	namespace lang {

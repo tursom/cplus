@@ -49,11 +49,32 @@ void throwAnException() {
 	throw Exception("test hello");
 }
 
+class T1 {
+	bool isLeft;
+	bool red;
+	u_int32_t size = 1;
+	T1 *parent = nullptr;
+	T1 *left = nullptr;
+	T1 *right = nullptr;
+};
+
+class T2 {
+	bool isLeft;
+	bool red;
+	u_int32_t size = 1;
+	T2 *parent = nullptr;
+	T2 *left = nullptr;
+	T2 *right = nullptr;
+};
+
 int main() {
+	std::cout << sizeof(T1) << std::endl
+	          << sizeof(T2) << std::endl;
 	Set<int> s;
 	for (int i = 0; i < 100; ++i) {
 		s.insert(i);
 	}
+	std::cout << s.toString().c_str() << std::endl;
 	for (int i = 0; i < 100; ++i) {
 		auto find = s.find(i);
 		std::cout << ((find == nullptr) ? 0 : *find) << std::endl;
@@ -65,16 +86,22 @@ int main() {
 		std::cout << (s1.c_str() == s2.c_str() ? "true" : "false") << std::endl;
 		String s3("1234"), s4("1234");
 		std::cout << (s3.c_str() == s4.c_str() ? "true" : "false") << std::endl;
+		String s5("12345"), s6("12345");
+		std::cout << (s5.c_str() == s6.c_str() ? "true" : "false") << std::endl;
+		throw Exception("hello");
 	} catch (Exception e) {
-		std::cerr << e.getMessage().stdString() << std::endl;
-		exit(1);
+		std::cout << e.getMessage().c_str() << std::endl;
 	}
 	
 	try {
 		throwAnException();
 	} catch (Exception e) {
-		std::cerr << e.getMessage().stdString() << std::endl;
+		std::cout << e.getMessage().c_str() << std::endl;
 	}
+	
+	
+	std::cout << String::allString().c_str() << std::endl;
+
 //	ServerHandler serverHandler;
 //	Thread([]() {
 //		try {
@@ -98,5 +125,5 @@ int main() {
 //		}
 //	}).start();
 //	Thread::detachAll();
-//	Thread::exitThread();
+	Thread::exitThread();
 }

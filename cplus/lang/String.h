@@ -6,7 +6,6 @@
 #define CPLUS_UTILS_String_H
 
 #include <string>
-#include <set>
 #include "../tools/class.h"
 
 namespace cplus {
@@ -19,18 +18,20 @@ namespace cplus {
 		public:
 			String();
 			
+			String(const String &str);
+			
 			explicit String(const char *str);
 			
 			explicit String(const std::string &str);
 			
 			explicit String(const ByteArray &buffer);
 			
+			virtual ~String();
+			
 			String toString() const override;
 			
-			
 			/**
-			 * 目前实现方式是使用标准库string的c_str函数，
-			 * 不保证时间复杂度位常数
+			 * 时间复杂度位常数为常数 O(1)
 			 * @return
 			 */
 			const char *c_str() const;
@@ -52,9 +53,11 @@ namespace cplus {
 			String operator+(const std::string &str1);
 			
 			friend String operator+(const std::string &str1, const String &str2);
+			
+			static String allString();
 		
 		private:
-			const CPlusString *value{};
+			CPlusString *value{};
 		};
 	}
 }

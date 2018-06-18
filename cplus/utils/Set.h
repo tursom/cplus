@@ -7,10 +7,12 @@
 
 #include <functional>
 #include <iostream>
+#include "Queue.h"
+#include "StringBuilder.h"
 #include "../tools/class.h"
 #include "../system/Exception.h"
 #include "../memory/dark_magic.h"
-#include "Queue.h"
+#include "ArrayStack.hpp"
 
 namespace cplus {
 	namespace utils {
@@ -21,13 +23,20 @@ namespace cplus {
 			Set() {}
 			
 			~Set() {
+				std::cout << "~Set()" << std::endl;
 				forEach([](T &value) {
 					delete &value;
 				});
+				TreeNode *node = nullptr;
+				root->forEach([&node](TreeNode *it) {
+					if (node != nullptr)delete node;
+					node = it;
+				});
+				if (node != nullptr)delete node;
 			}
 			
 			bool insert(const T &value) {
-				if (root == nullptr) root = new Tree(false, value);
+				if (root == nullptr) root = new TreeNode(false, false, nullptr, value);
 				else root = root->insert(value);
 				while (root->getParent() != nullptr)root = root->getParent();
 				return true;
@@ -49,19 +58,35 @@ namespace cplus {
 			}
 			
 			void forEach(std::function<void(T &)> func) const {
-				Tree *state = this->root;
-				Queue<Tree *> taskQueue;
+				TreeNode *state = this->root;
+				ArrayStack<TreeNode *> taskQueue;
 				while (state != nullptr) {
 					auto get = state->get();
 					if (get != nullptr) {
 						func(*get);
 					}
-					if (state->getLeft() != nullptr)taskQueue.offer(state->getLeft());
-					if (state->getRight() != nullptr)taskQueue.offer(state->getRight());
-					auto sstate = taskQueue.pool();
-					if (sstate == nullptr)break;
-					else state = *sstate;
+					if (state->getLeft() != nullptr)taskQueue.push(state->getLeft());
+					if (state->getRight() != nullptr)taskQueue.push(state->getRight());
+					if (!taskQueue.pop(state))break;
 				}
+			}
+			
+			lang::String toString() const override {
+				StringBuilder sb;
+				sb.append("{ ");
+				root->forEach([&sb](TreeNode *it) {
+					sb.append("[ node:");
+					sb.append((void *) it);
+					sb.append(", parent:");
+					sb.append((void *) it->getParent());
+					sb.append(", left:");
+					sb.append((void *) it->getLeft());
+					sb.append(", right:");
+					sb.append((void *) it->getRight());
+					sb.append(" ]");
+				});
+				sb.append(" }");
+				return sb.toString();
 			}
 			
 			CPlusClass(RBTException), public system::Exception {
@@ -74,59 +99,81 @@ namespace cplus {
 			};
 		
 		private:
-			class Tree {
+			class TreeNode {
 			public:
-				Tree() = default;
+				TreeNode() : isRedColor(true), isLeft(false) {}
 				
-				explicit Tree(const T &key) : value((T *) malloc(sizeof(T))) {
+				explicit TreeNode(bool isLeft) : isRedColor(true), isLeft(isLeft) {}
+				
+				explicit TreeNode(const T &key) : value((T *) malloc(sizeof(T))), isRedColor(true), isLeft(false) {
 					memory::copy(key, *this->value);
 				}
 				
-				Tree(bool red, const T &key) : red(red), value((T *) malloc(sizeof(T))) {
+				TreeNode(bool red, bool isLeft, TreeNode *parent, const T &key)
+						: isRedColor(red), value((T *) malloc(sizeof(T))), isLeft(false), parent(parent) {
 					memory::copy(key, *this->value);
 				}
 				
-				bool isBlack() { return !red; }
+				void forEach(std::function<void(TreeNode *)> func) {
+					TreeNode *state = this;
+					ArrayStack<TreeNode *> taskQueue;
+					while (state != nullptr) {
+						func(state);
+						if (state->getLeft() != nullptr)taskQueue.push(state->getLeft());
+						if (state->getRight() != nullptr)taskQueue.push(state->getRight());
+						if (!taskQueue.pop(state))break;
+					}
+				}
 				
-				void isBlack(bool isBlack) { red = !isBlack; }
+				bool isBlack() { return !isRedColor; }
 				
-				bool isRed() { return red; }
+				void isBlack(bool isBlack) { isRedColor = !isBlack; }
 				
-				void isRed(bool isRed) { red = isRed; }
+				bool isRed() { return isRedColor; }
 				
-				Tree *getParent() const { return parent; }
+				void isRed(bool isRed) { isRedColor = isRed; }
 				
-				Tree *getLeft() const { return left; }
+				TreeNode *getParent() const { return parent; }
 				
-				Tree *getRight() const { return right; }
+				TreeNode *getLeft() const { return left; }
+				
+				TreeNode *getRight() const { return right; }
 				
 				T *get() const { return value; }
 				
-				void setParent(Tree *parent) {
-					Tree::parent = parent;
+				void setParent(TreeNode *parent) {
+					TreeNode::parent = parent;
 				}
 				
-				void setLeft(Tree *left) {
-					Tree::left = left;
+				inline void setLeft(TreeNode *node) {
+					left = node;
+					if (node != nullptr) {
+						node->parent = this;
+						node->isLeft = true;
+					}
 				}
 				
-				void setRight(Tree *right) {
-					Tree::right = right;
+				inline void setRight(TreeNode *node) {
+					right = node;
+					if (node != nullptr) {
+						node->parent = this;
+						node->isLeft = false;
+					}
 				}
 				
 				void setKey(T *key) {
-					Tree::value = key;
+					TreeNode::value = key;
 				}
 				
-				Tree *leftRotate() {
+				TreeNode *leftRotate() {
 					return leftRotate(this);
 				}
 				
-				Tree *rightRotate() {
+				TreeNode *rightRotate() {
 					return rightRotate(this);
 				}
 				
-				Tree *insert(const T &value) {
+				TreeNode *insert(const T &value) {
 					return insert(this, value);
 				}
 				
@@ -136,40 +183,49 @@ namespace cplus {
 					else return ret->value;
 				}
 				
-				static u_int32_t getSize(Tree *p) {
+				static u_int32_t getSize(TreeNode *p) {
 					if (p == nullptr)return 0;
 					else return p->size;
 				}
 				
-				static bool isBlack(Tree *p) { return p == nullptr || !p->red; }
+				inline bool isLeftNode() { return isLeft; }
 				
-				static bool isRed(Tree *p) { return p != nullptr && p->red; }
+				inline bool isRightNode() { return !isLeft; }
 				
-				static Tree *leftRotate(Tree *root) {
+				static bool isBlack(TreeNode *p) { return p == nullptr || !p->isRedColor; }
+				
+				static bool isRed(TreeNode *p) { return p != nullptr && p->isRedColor; }
+				
+				inline static void swapColor(TreeNode *node1, TreeNode *node2) {
+					node1->isRedColor ^= node2->isRedColor;
+					node2->isRedColor ^= node1->isRedColor;
+					node1->isRedColor ^= node2->isRedColor;
+				}
+				
+				static TreeNode *leftRotate(TreeNode *root) {
 					if (root == nullptr)return root;
 					auto right = root->right;
+					//检查是否符合左旋条件
+					if (right == nullptr)return nullptr;
 					//将 right 传递给 parent
 					if (root->parent != nullptr) {
-						if (root->parent->left == root) {
-							root->parent->left = right;
-						} else {
-							root->parent->right = right;
-						}
+						replaceWith(root, right);
+					} else {
+						right->parent = nullptr;
 					}
-					right->parent = root->parent;
-					
 					//将 right 的 left 传递给 root
-					root->right = right->left;
-					if (root->right != nullptr) root->right->parent = root;
+					root->setRight(right->left);
 					
 					//重设 parent 为 right (1)
 					root->parent = right;
 					root->parent->left = root;
+					root->isLeft = true;
 					
 					//交换颜色
-					bool red = root->red;
-					root->red = right->red;
-					right->red = red;
+//					bool isRedColor = root->isRedColor;
+//					root->isRedColor = right->isRedColor;
+//					right->isRedColor = isRedColor;
+					swapColor(root, right);
 					
 					root->size = getSize(root->left) + getSize(root->right) + 1;
 					right->size = root->size + getSize(right->right) + 1;
@@ -177,31 +233,31 @@ namespace cplus {
 					return right;
 				}
 				
-				static Tree *rightRotate(Tree *root) {
+				static TreeNode *rightRotate(TreeNode *root) {
 					if (root == nullptr)return root;
 					auto left = root->left;
+					//检查是否符合右旋条件
+					if (left == nullptr)return nullptr;
 					//将 left 传递给 parent
-					left->parent = root->parent;
 					if (root->parent != nullptr) {
-						if (root->parent->right == root) {
-							left->parent->right = left;
-						} else {
-							left->parent->left = left;
-						}
+						replaceWith(root, left);
+					} else {
+						left->parent = nullptr;
 					}
 					
 					//将 left 的 right 传递给 root
-					root->left = left->right;
-					if (root->left != nullptr) root->left->parent = root;
+					root->setLeft(left->right);
 					
 					//重设 parent 为 left
 					root->parent = left;
 					root->parent->right = root;
+					root->isLeft = false;
 					
 					//交换颜色
-					bool red = root->red;
-					root->red = left->red;
-					left->red = red;
+//					bool isRedColor = root->isRedColor;
+//					root->isRedColor = left->isRedColor;
+//					left->isRedColor = isRedColor;
+					swapColor(root, left);
 					
 					root->size = getSize(root->right) + getSize(root->left) + 1;
 					left->size = root->size + getSize(left->left) + 1;
@@ -209,70 +265,74 @@ namespace cplus {
 					return left;
 				}
 				
-				static Tree *flipColors(Tree *root) {
-					if (root != nullptr && isRed(root->right) && isRed(root->left)) {
-						//如果两个子节点都是红色的
+				static TreeNode *flipColors(TreeNode *root) {
+					//在保证黑高不变的情况下对颜色进行翻转
+					if (root != nullptr && !root->isRedColor && isRed(root->right) && isRed(root->left)) {
+						//要求两个子节点都是红色的，根节点是黑色的
 						root->isRed(root->parent != nullptr);
 						root->left->isRed(false);
 						root->right->isRed(false);
-						check(root->parent);
+						fixAfterInsertion(root);
 					}
 					return root;
 				}
 				
-				static Tree *check(Tree *root) {
-					if (isBlack(root)) {
-						//如果 root 是黑色的，做一次颜色变换后直接返回
-						return flipColors(root);
+				/**
+				 *
+				 * @param node
+				 * @return
+				 */
+				static TreeNode *fixAfterInsertion(TreeNode *node) {
+					if (node == nullptr)return nullptr;
+					else if (node->parent == nullptr) {
+						node->isBlack(true);
 					}
-					//如果 root 是红色，则可确认 parent 不为 nullptr
-					if (root == root->parent->left) {
-						//如果 root 是 parent 的 left 节点
-						if (isRed(root->right)) {
-							//如果 right 和 root 都是红色的
-							leftRotate(root);
-							root = root->parent;
-							root = check(root);
-						} else if (isRed(root->left)) {
-							//如果 left 和 root 都是红色的
-							if (isRed(root->parent->right)) {
-								//如果 parent 的 right 也是红色的
-								root = flipColors(root->parent);
+					if (!node->isRedColor) {
+						return node;
+					} else {
+						//如果 node 是红色，则可确认 parent 不为 nullptr
+						if (node->isLeft) {
+							if (isRed(node->parent)) {
+								//如果有两个红节点相邻
+								//TODO 请移步 /cplus/lang/String.cpp 其中专为String优化的Set对应的注释
+								node = flipColors(rightRotate(node->parent));
+							}
+						} else {
+							//如果 node 是 parent 的 right 节点 l
+							if (isRed(node->parent->left)) {
+								//如果兄弟节点也为红色，父节点可以肯定为黑色
+								//对父节点执行颜色翻转操作，并执行 fixAfterInsertion 操作
+								flipColors(node->parent);
 							} else {
-								root = rightRotate(root->parent);
-								root->parent;
-								root = flipColors(root);
+								//否则对父节点执行右旋操作，并对原先的父节点（即当前的左节点）
+								//执行 fixAfterInsertion 操作
+								leftRotate(node->parent);
+								node = fixAfterInsertion(node->left);
 							}
 						}
-					} else if (root == root->parent->right) {
-						//如果 root 是 parent 的 right 节点
-						root = leftRotate(root->parent);
-						check(root);
 					}
-					return root;
+					return node;
 				}
 				
-				static Tree *insert(Tree *root, const T &value) {
+				static TreeNode *insert(TreeNode *root, const T &value) {
 					if (root == nullptr) {
-						return new Tree(false, value);
+						return new TreeNode(false, false, nullptr, value);
 					}
-					Tree *state = root;
+					TreeNode *state = root;
 					while (state != nullptr) {
 						if (value == *state->value) break;
 						else if (value <= *state->value) {
 							if (state->left == nullptr) {
-								state->left = new Tree(value);
-								state->left->parent = state;
-								check(state);
+								state->left = new TreeNode(true, true, state, value);
+								fixAfterInsertion(state->left);
 								break;
 							} else {
 								state = state->left;
 							}
 						} else {
 							if (state->right == nullptr) {
-								state->right = new Tree(value);
-								state->right->parent = state;
-								check(state);
+								state->right = new TreeNode(true, false, state, value);
+								fixAfterInsertion(state->right);
 								break;
 							} else {
 								state = state->right;
@@ -282,9 +342,9 @@ namespace cplus {
 					return root;
 				}
 				
-				static Tree *find(Tree *root, const T &value) {
+				static TreeNode *find(TreeNode *root, const T &value) {
 //					std::cout << "Set: static: finding value: " << value << std::endl;
-					Tree *state = root;
+					TreeNode *state = root;
 //					std::cout << "Set: static: state: " << state << std::endl;
 					while (state != nullptr) {
 						if (value == *state->value) break;
@@ -297,17 +357,29 @@ namespace cplus {
 					}
 					return state;
 				}
+				
+				inline static void replaceWith(TreeNode *oldNode, TreeNode *newNode) {
+					if (oldNode == nullptr)return;
+					if (oldNode->parent == nullptr) {
+						newNode->parent = nullptr;
+					} else if (oldNode->isLeft) {
+						oldNode->parent->setLeft(newNode);
+					} else {
+						oldNode->parent->setRight(newNode);
+					}
+				}
 			
 			private:
-				bool red = true;
+				bool isLeft;
+				bool isRedColor;
 				u_int32_t size = 1;
-				Tree *parent = nullptr;
-				Tree *left = nullptr;
-				Tree *right = nullptr;
+				TreeNode *parent = nullptr;
+				TreeNode *left = nullptr;
+				TreeNode *right = nullptr;
 				T *value = nullptr;
 			};
 			
-			Tree *root = nullptr;
+			TreeNode *root = nullptr;
 		};
 	}
 }

@@ -48,7 +48,18 @@ namespace cplus {
 		}
 		
 		StringBuilder &StringBuilder::append(const lang::CPlusString &value) {
-			this->value.append(value.toString().c_str());
+			this->value.append(value.getStr());
+			return *this;
+		}
+		
+		StringBuilder &StringBuilder::append(void *value) {
+			char str[20];
+			sprintf(str, "%p", value);
+			this->value.append(str);
+			return *this;
+		}
+		
+		StringBuilder &StringBuilder::append() {
 			return *this;
 		}
 	}

@@ -17,6 +17,8 @@ namespace cplus {
 		public:
 			Queue() = default;
 			
+			explicit Queue(cplus_queue_size_t maxSize) : maxSize(maxSize) {}
+			
 			bool offer(const T &value) {
 				if (queueSize >= maxSize) {
 					return false;
@@ -27,10 +29,9 @@ namespace cplus {
 				return true;
 			}
 			
-			T *pool() {
-				if (begin == nullptr) return nullptr;
-				if (last != nullptr)free(last);
-				last = begin->get();
+			T &pool() {
+				if (begin == nullptr) return last;
+				memory::swap(last, begin->get());
 				begin->setToNull();
 				auto next = begin->getNext();
 				free(begin);
@@ -47,29 +48,19 @@ namespace cplus {
 			public:
 				QueuePoint() : next(nullptr), value(nullptr) {}
 				
-				QueuePoint(QueuePoint *prev, const T &value) : next(nullptr), value((T *) malloc(sizeof(T))) {
+				QueuePoint(QueuePoint *prev, const T &value)
+						: next(nullptr), value(value) {
 					if (prev != nullptr)prev->next = this;
-					memory::copy(value, *(this->value));
-				}
-				
-				~QueuePoint() {
-					if (value != nullptr)
-						free(value);
 				}
 				
 				inline void del(QueuePoint *next) { next->next = next; }
 				
-				inline T *get() { return value; }
+				inline T get() { return value; }
 				
-				inline const T *get() const { return value; }
+				inline const T get() const { return value; }
 				
 				void set(const T &value) {
-					if (this->value == nullptr) {
-						this->value = malloc(sizeof(T));
-						memory::copy(value, *(this->value));
-					} else {
-						this->value = value;
-					}
+					this->value = value;
 				}
 				
 				void setToNull() { this->value = nullptr; }
@@ -79,7 +70,7 @@ namespace cplus {
 				inline void setNext(QueuePoint *prev) { this->next = prev; }
 			
 			private:
-				T *value;
+				T value;
 				QueuePoint *next;
 			};
 			
@@ -87,7 +78,7 @@ namespace cplus {
 			cplus_queue_size_t queueSize = 0;
 			QueuePoint *end = nullptr;
 			QueuePoint *begin = nullptr;
-			T *last = nullptr;
+			T last;
 		};
 	}
 }

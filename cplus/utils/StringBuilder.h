@@ -13,6 +13,8 @@ namespace cplus {
 	namespace utils {
 		CPlusClass(StringBuilder) {
 		public:
+			StringBuilder &append();
+			
 			StringBuilder &append(const ::cplus::lang::String &string);
 			
 			StringBuilder &append(const char *string);
@@ -24,6 +26,8 @@ namespace cplus {
 			StringBuilder &append(unsigned long value);
 			
 			StringBuilder &append(double value);
+			
+			StringBuilder &append(void *value);
 			
 			::cplus::lang::String toString() const override;
 			

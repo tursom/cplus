@@ -5,7 +5,6 @@
 #ifndef CPLUS_UTILS_Int_H
 #define CPLUS_UTILS_Int_H
 
-#include "String.h"
 #include "Object.h"
 #include "Long.h"
 #include <cstdint>

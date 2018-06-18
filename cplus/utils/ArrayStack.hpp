@@ -23,11 +23,13 @@ namespace cplus {
 			explicit ArrayStack(cplus_queue_size_t blockSize, cplus_queue_size_t maxBlock)
 					: blockSize(blockSize), endPoint(0),
 					  blockArrayStack(maxBlock) {
+//				std::cout << "ArrayStack: ArrayStack(): blockSize:" << blockSize << std::endl;
 				last = new T[blockSize];
 				blockArrayStack.push(last);
 			}
 			
 			~ArrayStack() {
+//				std::cout << "ArrayStack: ~ArrayStack(): endpoint:" << endPoint << std::endl;
 				blockArrayStack.forEach([&](T *block) { //遍历每一个数据块
 					//释放每一个数据块的内存
 					delete[] block;
@@ -35,6 +37,7 @@ namespace cplus {
 			}
 			
 			bool push(const T &value) {
+//				std::cout << "ArrayStack: bool push(const T &value): endpoint:" << endPoint << std::endl;
 				//检查是否已到数据块边界
 				if (endPoint == blockSize) {
 					//保存last状态
@@ -67,42 +70,43 @@ namespace cplus {
 				return true;
 			}
 			
-			const T &pop() {
+			T *pop() {
+//				std::cout << "ArrayStack: T *pop(): endpoint:" << endPoint << std::endl;
+				static T *lastValue = (T *) malloc(sizeof(T));
 				//检查是否还有剩余元素
-				if (endPoint == 0) return nullptr; //如果没有则返回最后的缓存
-				
-				T lastValue;
-				//使用黑魔法获取数据
-				::cplus::memory::copy(last[--endPoint], lastValue);
-				
+				if (endPoint == 0) return nullptr; //如果没有则返回 nullptr
+				pop(*lastValue);
+				return lastValue;
+			}
+			
+			bool pop(const T &buffer) {
+//				std::cout << "ArrayStack: bool pop(const T &buffer): endpoint:" << endPoint << std::endl;
+				//检查是否还有剩余元素
 				//检查是否已到数据块边界
 				if (endPoint == 0) {
 					//释放内存
-					if (lastState != nullptr) {
-						delete lastState;
-						lastState = nullptr;
-					}
+					auto t = blockArrayStack.pop();
+					delete t;
 					
 					//更新last状态
-					lastState = blockArrayStack.pop();
 					if (blockArrayStack.pop(last)) {
 						//成功
 						blockArrayStack.push(last);
 						//更新endPoint指针状态
 						endPoint = blockSize;
+					} else {
+						return false;
 					}
 				}
-				//返回数据
-				return lastValue;
-			}
-			
-			bool pop(const T &buffer) {
-				//检查是否还有剩余元素
-				if (endPoint == 0) return false; //如果没有则返回最后的缓存
 				
 				//使用黑魔法获取和更新数据
 				::cplus::memory::copy(last[--endPoint], buffer);
-				
+				return true; //至少pop是成功的
+			}
+			
+			void pop(T *&buffer) {
+//				std::cout << "ArrayStack: void pop(T *&buffer): endpoint:" << endPoint << std::endl;
+				//检查是否还有剩余元素
 				//检查是否已到数据块边界
 				if (endPoint == 0) {
 					//释放内存
@@ -116,12 +120,14 @@ namespace cplus {
 						//更新endPoint指针状态
 						endPoint = blockSize;
 						//返回数据
-						return true;
 					} else {
-						//更新last状态失败
-						return true; //至少pop是成功的
+						buffer = nullptr;
+						return;
 					}
 				}
+				
+				//获取和更新数据
+				buffer = last[--endPoint];
 			}
 			
 			bool isFull() { return endPoint == blockSize && blockArrayStack.isFull(); }

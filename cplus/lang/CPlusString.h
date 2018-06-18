@@ -48,10 +48,17 @@ namespace cplus {
 			bool operator>=(const CPlusString &rhs) const;
 			
 			char *getStr() const;
+			
+			inline void inCited() { cited++; }
+			
+			inline void unCited() { cited--; }
+			
+			u_int16_t getCited() const;
 		
 		private:
 			char *str{};
 			size_t bufferSize{};
+			u_int16_t cited;
 		};
 	}
 }

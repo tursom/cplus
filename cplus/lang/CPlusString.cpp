@@ -2,6 +2,7 @@
 // Created by Tursom Ulefits on 2018/6/16.
 //
 
+#include <iostream>
 #include "CPlusString.h"
 #include "ByteArray.h"
 
@@ -32,6 +33,8 @@ namespace cplus {
 		}
 		
 		CPlusString::~CPlusString() {
+//			std::cout << "CPlusString: ~CPlusString(): " << (void *) str << ": "
+//			          << (str == nullptr ? " [ str is null! ] " : str) << std::endl;
 			if (str != nullptr) free(str);
 		}
 		
@@ -83,6 +86,10 @@ namespace cplus {
 		
 		size_t CPlusString::getBufferSize() const {
 			return bufferSize;
+		}
+		
+		u_int16_t CPlusString::getCited() const {
+			return cited;
 		}
 	}
 }

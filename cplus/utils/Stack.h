@@ -35,7 +35,8 @@ namespace cplus {
 			/**
 			 * @param maxSize 最大节点数量
 			 */
-			explicit Stack(cplus_queue_size_t maxSize) : state(nullptr), stackSize(0), maxSize(maxSize) {}
+			explicit Stack(cplus_queue_size_t maxSize)
+					: state(nullptr), stackSize(0), maxSize(maxSize), lastState(nullptr) {}
 			
 			/**
 			 * Stack析构函数
@@ -60,6 +61,7 @@ namespace cplus {
 			 * @return 成功与否
 			 */
 			bool push(const T &value) {
+//				std::cout << "Stack: bool push(const T &value)" << std::endl;
 				if (stackSize < maxSize) {
 					state = new StackPoint(state, value);
 					++stackSize;
@@ -70,6 +72,7 @@ namespace cplus {
 			}
 			
 			const T &pop() {
+//				std::cout << "Stack: T &pop()" << std::endl;
 				if (lastState != nullptr) {
 					delete lastState;
 					lastState = nullptr;
@@ -83,6 +86,7 @@ namespace cplus {
 			}
 			
 			bool pop(const T &buffer) {
+//				std::cout << "Stack: bool pop(const T &buffer)" << std::endl;
 				if (lastState != nullptr) {
 					delete lastState;
 					lastState = nullptr;
