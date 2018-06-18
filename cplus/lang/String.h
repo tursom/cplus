@@ -28,11 +28,15 @@ namespace cplus {
 			
 			virtual ~String();
 			
+			/**
+			 * @return 当前String
+			 */
 			String toString() const override;
 			
 			/**
+			 * 将 String 转换为 const* char
 			 * 时间复杂度位常数为常数 O(1)
-			 * @return
+			 * @return 当前字符串的C标准版本
 			 */
 			const char *c_str() const;
 			
@@ -40,8 +44,6 @@ namespace cplus {
 			
 			/**
 			 * 返回一个标准库的string对象
-			 * 不保证返回的绝对是const引用
-			 * 不保证向下兼容性
 			 * @return 一个对应的标准库的string对象
 			 */
 			std::string stdString() const;
@@ -54,11 +56,24 @@ namespace cplus {
 			
 			friend String operator+(const std::string &str1, const String &str2);
 			
-			static String allString();
+			/**
+			 * 获取字符串池内的所有字符串的数据
+			 * @return 所有字符串的JSON数据
+			 */
+			static char *allString();
 		
+			static size_t usedSize();
 		private:
 			CPlusString *value{};
 		};
+		
+		/**
+		 * 将字符串转义
+		 * @param buffer 缓冲区
+		 * @param oldStr 旧字符串
+		 * @param strSize 旧字符串大小。请保证缓冲区的大小至少为旧字符串长度的两倍。
+		 */
+		void escapeString(char *buffer, const char *oldStr, size_t strSize);
 	}
 }
 

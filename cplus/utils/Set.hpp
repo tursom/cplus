@@ -30,7 +30,7 @@ namespace cplus {
 			
 			~Set() {
 				std::cout << "~Set()" << std::endl;
-				forEach([](T &value) {
+				forEach([](const T &value) {
 					delete &value;
 				});
 				TreeNode *node = nullptr;
@@ -63,7 +63,7 @@ namespace cplus {
 				return this->root->find(value);
 			}
 			
-			void forEach(std::function<void(T &)> func) const {
+			void forEach(std::function<void(const T &)> func) const {
 				TreeNode *state = this->root;
 				ArrayStack<TreeNode *> taskQueue;
 				while (state != nullptr) {
@@ -80,24 +80,81 @@ namespace cplus {
 			lang::String toString() const override {
 				StringBuilder sb;
 				size_t id = 0;
-				sb.append("[ ");
+				sb.append("[");
 				root->forEach([&sb, &id](TreeNode *it) {
 					if (id != 0) {
-						sb.append(", ");
+						sb.append(",");
 					}
-					sb.append("{ \"node\":\"");
-					sb.append((void *) it);
-					sb.append("\", \"parent\":\"");
-					sb.append((void *) it->getParent());
-					sb.append("\", \"left\":\"");
-					sb.append((void *) it->getLeft());
-					sb.append("\", \"right\":\"");
-					sb.append((void *) it->getRight());
-					sb.append("\" }");
+					sb.append("{\"value\":\"");
+					sb.append((void *) it->get());
+					sb.append("\"}");
 					++id;
 				});
-				sb.append(" ]");
+				sb.append("]");
 				return sb.toString();
+			}
+			
+			lang::String toString(std::function<lang::String(T *)> valueFunc) const {
+				StringBuilder sb;
+				size_t id = 0;
+				sb.append("[");
+				root->forEach([&sb, &id, &valueFunc](TreeNode *it) {
+					if (id != 0) {
+						sb.append(",");
+					}
+					sb.append("{\"value\":\"");
+					sb.append(valueFunc(it->get()));
+					sb.append("\"}");
+					++id;
+				});
+				sb.append("]");
+				return sb.toString();
+			}
+			
+			void c_str(std::function<lang::String(T *)> valueFunc, StringBuilder &buffer) const {
+				buffer = StringBuilder();
+				size_t id = 0;
+				buffer.append("[");
+				root->forEach([&buffer, &id, &valueFunc](TreeNode *it) {
+					if (id != 0) {
+						buffer.append(",");
+					}
+					buffer.append("{\"value\":\"");
+					buffer.append(valueFunc(it->get()));
+					buffer.append("\"}");
+					++id;
+				});
+				buffer.append("]");
+			}
+			
+			void getStruction(std::function<lang::String(T *)> valueFunc, StringBuilder &buffer) const {
+				buffer = StringBuilder();
+				size_t id = 0;
+				buffer.append("[");
+				root->forEach([&buffer, &id, &valueFunc](TreeNode *it) {
+					if (id != 0) {
+						buffer.append(",");
+					}
+					buffer.append("{\"node\":\"");
+					buffer.append((void *) it);
+					buffer.append("\",\"parent\":\"");
+					buffer.append((void *) it->getParent());
+					buffer.append("\",\"left\":\"");
+					buffer.append((void *) it->getLeft());
+					buffer.append("\",\"right\":\"");
+					buffer.append((void *) it->getRight());
+					buffer.append("\",\"color\":\"");
+					buffer.append(it->isRed() ? "RED" : "BLACK");
+					buffer.append("\",\"size\":\"");
+					buffer.append((unsigned long) it->getSize());
+					buffer.append("\",\"leftOrRight\":\"");
+					buffer.append(it->isLeftNode() ? "LEFT" : "RIGHT");
+					buffer.append("\",\"value\":\"");
+					buffer.append(valueFunc(it->get()));
+					buffer.append("\"}");
+					++id;
+				});
+				buffer.append("]");
 			}
 			
 			CPlusClass(RBTException), public system::Exception {
@@ -123,6 +180,10 @@ namespace cplus {
 				TreeNode(bool red, bool isLeft, TreeNode *parent, const T &key)
 						: isRedColor(red), key((T *) malloc(sizeof(T))), isLeft(false), parent(parent) {
 					memory::copy(key, *this->key);
+					while (parent != nullptr) {
+						parent->size++;
+						parent = parent->parent;
+					}
 				}
 				
 				void forEach(std::function<void(TreeNode *)> func) {
@@ -192,6 +253,10 @@ namespace cplus {
 					auto ret = find(this, value);
 					if (ret == nullptr)return nullptr;
 					else return ret->key;
+				}
+				
+				u_int32_t getSize() {
+					return getSize(this);
 				}
 				
 				static u_int32_t getSize(TreeNode *p) {

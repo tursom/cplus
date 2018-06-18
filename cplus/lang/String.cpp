@@ -16,11 +16,68 @@
 
 namespace cplus {
 	namespace lang {
+		void escapeString(char *buffer, const char *oldStr, size_t strSize) {
+			size_t index = 0;
+			for (size_t i = 0; i < strSize; ++i) {
+				switch (oldStr[i]) {
+					case '\a':
+						buffer[index++] = '\\';
+						buffer[index++] = 'a';
+						break;
+					case '\b':
+						buffer[index++] = '\\';
+						buffer[index++] = 'b';
+						break;
+					case '\f':
+						buffer[index++] = '\\';
+						buffer[index++] = 'f';
+						break;
+					case '\n':
+						buffer[index++] = '\\';
+						buffer[index++] = 'n';
+						break;
+					case '\r':
+						buffer[index++] = '\\';
+						buffer[index++] = 'r';
+						break;
+					case '\t':
+						buffer[index++] = '\\';
+						buffer[index++] = 't';
+						break;
+					case '\v':
+						buffer[index++] = '\\';
+						buffer[index++] = 'v';
+						break;
+					case '\\':
+						buffer[index++] = '\\';
+						buffer[index++] = '\\';
+						break;
+					case '\?':
+						buffer[index++] = '\\';
+						buffer[index++] = '\?';
+						break;
+					case '\'':
+						buffer[index++] = '\\';
+						buffer[index++] = '\'';
+						break;
+					case '\"':
+						buffer[index++] = '\\';
+						buffer[index++] = '\"';
+						break;
+					default:
+						buffer[index++] = oldStr[i];
+						break;
+				}
+			}
+			buffer[index] = 0;
+		}
+		
 		CPlusClass(StringSet) {
 		public:
 			StringSet() = default;
 			
 			~StringSet() {
+				if (toCStringBuffer != nullptr)free(toCStringBuffer);
 				forEach([](CPlusString *value) {
 //					std::cout << "StringSet: ~StringSet(): deleting: " << &key << " :" << key.getStr() << std::endl;
 					delete value;
@@ -61,8 +118,49 @@ namespace cplus {
 				if (root != nullptr)root->forEach(func);
 			}
 			
-			String toString() const override {
-				return root->toString();
+			char *toCString() const {
+				if (toCStringBuffer != nullptr) return toCStringBuffer;
+				utils::StringBuilder sb;
+				size_t stringID = 0;
+				sb.append("[");
+				
+				forEach([&sb, &stringID](CPlusString *value) {
+					if (stringID != 0) {
+						sb.append(",");
+//					}
+					} else {
+						++stringID;
+					}
+
+//					sb.append("{\"StringID\":");
+//					sb.append(stringID++);
+//					sb.append(R"(,"str":")");
+					
+					sb.append(R"({"str":")");
+					
+					auto strSize = value->getSize();
+					auto *buffer = new char[strSize * 2];
+					auto str = value->getStr();
+					escapeString(buffer, value->getStr(), strSize);
+					sb.append(buffer);
+					delete buffer;
+					
+					sb.append("\"}");
+				});
+				sb.append("]");
+				auto swap = CPlusString(sb.c_str());
+				toCStringBuffer = swap.getStr();
+				swap.setToNull();
+				return toCStringBuffer;
+			}
+			
+			size_t usedSize() {
+				size_t strSize = 0;
+				forEach([&strSize](CPlusString *value) {
+					strSize += value->getBufferSize();
+				});
+				return sizeof(*this) + sizeof(*root) * root->getSize() + root->getSize() * sizeof(CPlusString) +
+				       strSize;
 			}
 			
 			class RBTException : public system::Exception {
@@ -77,19 +175,17 @@ namespace cplus {
 		private:
 			class TreeNode {
 			public:
-				TreeNode() : isRedColor(true), isLeft(false) {}
-				
-				explicit TreeNode(bool isLeft) : isRedColor(true), isLeft(isLeft) {}
-				
-				explicit TreeNode(CPlusString &key)
-						: value((CPlusString *) malloc(sizeof(CPlusString))), isRedColor(true), isLeft(false) {
-					this->value->setStr(key.getStr(), key.getBufferSize());
-					key.setToNull();
+				TreeNode() : isRedColor(true), isLeft(false) {
+					if (toCStringBuffer != nullptr)free(toCStringBuffer);
+					toCStringBuffer = nullptr;
 				}
 				
 				TreeNode(bool red, bool isLeft, TreeNode *parent, CPlusString &key)
 						: isRedColor(red), value((CPlusString *) malloc(sizeof(CPlusString))), isLeft(false),
 						  parent(parent) {
+					if (toCStringBuffer != nullptr)free(toCStringBuffer);
+					toCStringBuffer = nullptr;
+					
 					this->value->setStr(key.getStr(), key.getBufferSize());
 					key.setToNull();
 				}
@@ -115,7 +211,7 @@ namespace cplus {
 				}
 				
 				void forEach(const std::function<void(CPlusString *)> &func) const {
-					TreeNode *state = const_cast<TreeNode *>(this);
+					auto *state = const_cast<TreeNode *>(this);
 					utils::ArrayStack<TreeNode *> taskQueue;
 					while (true) {
 						auto get = state->get();
@@ -126,25 +222,6 @@ namespace cplus {
 						if (state->getRight() != nullptr)taskQueue.push(state->getRight());
 						if (!taskQueue.pop(state))break;
 					}
-				}
-				
-				String toString() {
-					utils::StringBuilder sb;
-					size_t stringID = 0;
-					sb.append("[ ");
-					
-					forEach([&sb, &stringID](CPlusString *value) {
-						if (stringID != 0) {
-							sb.append(", ");
-						}
-						sb.append("{ \"String ID\": ");
-						sb.append(stringID++);
-						sb.append(R"(, "str":")");
-						sb.append(*value);
-						sb.append("\" }");
-					});
-					sb.append(" ]");
-					return sb.toString();
 				}
 				
 				inline bool isLeftNode() { return isLeft; }
@@ -165,6 +242,10 @@ namespace cplus {
 						node->parent = this;
 						node->isLeft = false;
 					}
+				}
+				
+				u_int32_t getSize() {
+					return getSize(this);
 				}
 				
 				static u_int32_t getSize(TreeNode *p) {
@@ -404,7 +485,10 @@ namespace cplus {
 			};
 			
 			TreeNode *root = nullptr;
+			static char *toCStringBuffer;
 		};
+		
+		char *StringSet::toCStringBuffer = nullptr;
 
 //		StringSet *stringSet = new StringSet();
 		StringSet stringSet;
@@ -480,8 +564,12 @@ namespace cplus {
 			this->value->unCited();
 		}
 		
-		String String::allString() {
-			return stringSet.toString();
+		char *String::allString() {
+			return stringSet.toCString();
+		}
+		
+		size_t String::usedSize() {
+			return stringSet.usedSize();
 		}
 	}
 }

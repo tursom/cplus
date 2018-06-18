@@ -19,7 +19,8 @@ namespace cplus {
 		}
 		
 		CPlusString::CPlusString(const std::string &str)
-				: bufferSize(str.size() + 1), str((char *) malloc(bufferSize)) {
+				: bufferSize(str.size() + 1) {
+			this->str = (char *) malloc(bufferSize);
 			strcpy(this->str, str.c_str());
 		}
 		
@@ -50,29 +51,29 @@ namespace cplus {
 		
 		bool CPlusString::operator==(const CPlusString &rhs) const {
 			if (&rhs == this)return true;
-			else return !strcmp(rhs.str, this->str);
+			else return strcmp(rhs.str, this->str) == 0;
 		}
 		
 		bool CPlusString::operator!=(const CPlusString &rhs) const {
-			return !(rhs == *this);
+			if (&rhs == this)return false;
+			else return strcmp(rhs.str, this->str) != 0;
 		}
 		
 		bool CPlusString::operator<(const CPlusString &rhs) const {
-			if (str < rhs.str)
-				return true;
+//			if (str < rhs.str) return true;
 			return strcmp(rhs.str, str) < 0;
 		}
 		
 		bool CPlusString::operator>(const CPlusString &rhs) const {
-			return rhs < *this;
+			return strcmp(rhs.str, str) > 0;
 		}
 		
 		bool CPlusString::operator<=(const CPlusString &rhs) const {
-			return !(rhs < *this);
+			return strcmp(rhs.str, str) <= 0;
 		}
 		
 		bool CPlusString::operator>=(const CPlusString &rhs) const {
-			return !(*this < rhs);
+			return strcmp(rhs.str, str) >= 0;
 		}
 		
 		char *CPlusString::getStr() const {

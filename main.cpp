@@ -70,37 +70,62 @@ class T2 {
 int main() {
 	std::cout << sizeof(T1) << std::endl
 	          << sizeof(T2) << std::endl;
+	
 	Set<int> s;
 	for (int i = 0; i < 100; ++i) {
 		s.insert(i);
 	}
-	std::cout << s.toString().c_str() << std::endl;
+	
+	StringBuilder s_structBuffer;
+	
+	auto s_getValue = [](const int *value) -> String {
+		return Int(*value).toString();
+	};
+	
+	s.c_str(s_getValue, s_structBuffer);
+	std::cout << s_structBuffer.c_str() << std::endl;
+	
+	s.getStruction(s_getValue, s_structBuffer);
+	std::cout << s_structBuffer.c_str() << std::endl;
+	
 	for (int i = 0; i < 100; ++i) {
 		auto find = s.find(i);
-		std::cout << ((find == nullptr) ? 0 : *find) << std::endl;
+		std::cout << ((find == nullptr) ? 0 : *find) << ' ' << std::flush;
 	}
+	std::cout << std::endl;
+	
+	s.forEach([](int value) {
+		std::cout << value << ' ' << std::flush;
+	});
+	std::cout << std::endl;
 	
 	try {
+		std::string ss1("123");
+		std::string ss2("1234");
+		std::string ss3("12345");
 		std::cout << std::string("12345").size() << std::endl;
-		String s1("123"), s2("123");
+		String s1("123"), s2(ss1.c_str());
 		std::cout << (s1.c_str() == s2.c_str() ? "true" : "false") << std::endl;
-		String s3("1234"), s4("1234");
+		String s3("1234"), s4(ss2.c_str());
 		std::cout << (s3.c_str() == s4.c_str() ? "true" : "false") << std::endl;
-		String s5("12345"), s6("12345");
+		String s5("12345"), s6(ss3.c_str());
 		std::cout << (s5.c_str() == s6.c_str() ? "true" : "false") << std::endl;
 		throw Exception("hello");
 	} catch (Exception e) {
 		std::cout << e.getMessage().c_str() << std::endl;
+		std::cout << e.getStackTrace().c_str() << std::endl;
 	}
 	
 	try {
 		throwAnException();
 	} catch (Exception e) {
 		std::cout << e.getMessage().c_str() << std::endl;
+		std::cout << e.getStackTrace().c_str() << std::endl;
 	}
 	
-	
-	std::cout << String::allString().c_str() << std::endl;
+	std::cout << String::allString() << std::endl;
+	std::cout << strlen(String::allString()) << std::endl;
+	std::cout << String::usedSize() << std::endl;
 
 //	ServerHandler serverHandler;
 //	Thread([]() {

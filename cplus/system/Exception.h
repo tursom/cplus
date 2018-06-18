@@ -16,15 +16,22 @@ namespace cplus {
 	namespace system {
 		CPlusClass(Exception) {
 		public:
-			Exception() = default;
+			Exception() : Exception("") {}
 			
 			explicit Exception(const char *message) : Exception(lang::String(message)) {}
 			
-			explicit Exception(const lang::String &message) : message(message) {}
+			explicit Exception(const lang::String &message) : message(message) {
+				stackTrace = getStack();
+			}
 			
 			const lang::String &getMessage() const { return message; }
+			
+			const lang::String &getStackTrace() const { return stackTrace; }
 		
 		private:
+			static lang::String getStack();
+			
+			lang::String stackTrace;
 			lang::String message;
 		};
 	}
