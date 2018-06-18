@@ -178,7 +178,7 @@ namespace cplus {
 				}
 				
 				TreeNode(bool red, bool isLeft, TreeNode *parent, const T &key)
-						: isRedColor(red), key((T *) malloc(sizeof(T))), isLeft(false), parent(parent) {
+						: isRedColor(red), key((T *) malloc(sizeof(T))), isLeft(isLeft), parent(parent) {
 					memory::copy(key, *this->key);
 					while (parent != nullptr) {
 						parent->size++;
@@ -357,20 +357,20 @@ namespace cplus {
 				 *
 				 * @param node 新插入的节点
 				 */
-				static TreeNode *fixAfterInsertion(TreeNode *node) {
-					if (node == nullptr)return nullptr;
+				static void fixAfterInsertion(TreeNode *node) {
+					if (node == nullptr)return;
 					else if (node->parent == nullptr) {
 						node->isBlack(true);
 					}
 					if (!node->isRedColor) {
-						return node;
+						return;
 					} else {
 						//如果 node 是红色，则可确认 parent 不为 nullptr
 						if (node->isLeft) {
 							if (isRed(node->parent)) {
 								//如果有两个红节点相邻
 								//TODO 请移步 /cplus/lang/String.cpp 其中专为String优化的Set对应的注释
-								node = flipColors(rightRotate(node->parent->parent));
+								flipColors(rightRotate(node->parent->parent));
 							}
 						} else {
 							//如果 node 是 parent 的 right 节点 l
@@ -382,11 +382,11 @@ namespace cplus {
 								//否则对父节点执行右旋操作，并对原先的父节点（即当前的左节点）
 								//执行 fixAfterInsertion 操作
 								leftRotate(node->parent);
-								node = fixAfterInsertion(node->left);
+								fixAfterInsertion(node->left);
 							}
 						}
 					}
-					return node;
+					return;
 				}
 				
 				static TreeNode *insert(TreeNode *root, const T &value) {

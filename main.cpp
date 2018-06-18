@@ -71,22 +71,18 @@ int main() {
 	std::cout << sizeof(T1) << std::endl
 	          << sizeof(T2) << std::endl;
 	
-	Set<int> s;
-	for (int i = 0; i < 100; ++i) {
-		s.insert(i);
-	}
-	
 	StringBuilder s_structBuffer;
 	
 	auto s_getValue = [](const int *value) -> String {
 		return Int(*value).toString();
 	};
 	
-	s.c_str(s_getValue, s_structBuffer);
-	std::cout << s_structBuffer.c_str() << std::endl;
-	
-	s.getStruction(s_getValue, s_structBuffer);
-	std::cout << s_structBuffer.c_str() << std::endl;
+	Set<int> s;
+	for (int i = 0; i < 100; ++i) {
+		s.insert(i);
+		s.getStruction(s_getValue, s_structBuffer);
+		std::cout << s_structBuffer.c_str() << std::endl << "," << std::endl;
+	}
 	
 	for (int i = 0; i < 100; ++i) {
 		auto find = s.find(i);
