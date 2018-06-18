@@ -61,7 +61,7 @@ namespace cplus {
 			 * @return 成功与否
 			 */
 			bool push(const T &value) {
-//				std::cout << "Stack: bool push(const T &value)" << std::endl;
+//				std::cout << "Stack: bool push(const K &key)" << std::endl;
 				if (stackSize < maxSize) {
 					state = new StackPoint(state, value);
 					++stackSize;
@@ -72,7 +72,7 @@ namespace cplus {
 			}
 			
 			const T &pop() {
-//				std::cout << "Stack: T &pop()" << std::endl;
+//				std::cout << "Stack: K &pop()" << std::endl;
 				if (lastState != nullptr) {
 					delete lastState;
 					lastState = nullptr;
@@ -86,7 +86,7 @@ namespace cplus {
 			}
 			
 			bool pop(const T &buffer) {
-//				std::cout << "Stack: bool pop(const T &buffer)" << std::endl;
+//				std::cout << "Stack: bool pop(const K &buffer)" << std::endl;
 				if (lastState != nullptr) {
 					delete lastState;
 					lastState = nullptr;

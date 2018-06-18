@@ -2,8 +2,8 @@
 // Created by Tursom Ulefits on 2018/6/15.
 //
 
-#ifndef CPLUS_SET_H
-#define CPLUS_SET_H
+#ifndef CPLUS_MAP_H
+#define CPLUS_MAP_H
 
 #include <functional>
 #include <iostream>
@@ -16,15 +16,21 @@
 
 namespace cplus {
 	namespace utils {
-		template<typename T>
-		CPlusClass(Set) {
+		template<typename K, typename V>
+		CPlusClass(Map) {
 		public:
 			
-			Set() {}
+			Map() {}
 			
-			~Set() {
-				std::cout << "~Set()" << std::endl;
-				forEach([](T &value) {
+			Map(K *keyArray, V *valueArray, size_t arraySize) : Map() {
+				for (size_t i = 0; i < arraySize; ++i) {
+					insert(keyArray[i], valueArray[i]);
+				}
+			}
+			
+			~Map() {
+				std::cout << "~Map()" << std::endl;
+				forEach([](K &value) {
 					delete &value;
 				});
 				TreeNode *node = nullptr;
@@ -35,29 +41,24 @@ namespace cplus {
 				if (node != nullptr)delete node;
 			}
 			
-			bool insert(const T &value) {
-				if (root == nullptr) root = new TreeNode(false, false, nullptr, value);
-				else root = root->insert(value);
+			bool insert(const K &key, const V &value) {
+				if (root == nullptr) root = new TreeNode(false, false, nullptr, key, value);
+				else root = root->insert(key, value);
 				while (root->getParent() != nullptr)root = root->getParent();
 				return true;
 			}
 			
-			T *get(const T &value) {
-//				std::cout << "Set: getting: " << value << std::endl;
-				auto ret = this->root->find(value);
-				if (ret == nullptr) {
-//					std::cout << "Set: not find value, inserting" << std::endl;
-					insert(value);
-					ret = this->root->find(value);
-				}
+			K *get(const K &key) {
+//				std::cout << "Map: getting: " << key << std::endl;
+				auto ret = this->root->find(key);
 				return ret;
 			}
 			
-			T *find(const T &value) {
+			V *find(const K &value) {
 				return this->root->find(value);
 			}
 			
-			void forEach(std::function<void(T &)> func) const {
+			void forEach(std::function<void(K &)> func) const {
 				TreeNode *state = this->root;
 				ArrayStack<TreeNode *> taskQueue;
 				while (state != nullptr) {
@@ -73,19 +74,24 @@ namespace cplus {
 			
 			lang::String toString() const override {
 				StringBuilder sb;
-				sb.append("{ ");
-				root->forEach([&sb](TreeNode *it) {
-					sb.append("[ node:");
+				size_t id = 0;
+				sb.append("[ ");
+				root->forEach([&sb, &id](TreeNode *it) {
+					if (id != 0) {
+						sb.append(", ");
+					}
+					sb.append("{ \"node\":\"");
 					sb.append((void *) it);
-					sb.append(", parent:");
+					sb.append("\", \"parent\":\"");
 					sb.append((void *) it->getParent());
-					sb.append(", left:");
+					sb.append("\", \"left\":\"");
 					sb.append((void *) it->getLeft());
-					sb.append(", right:");
+					sb.append("\", \"right\":\"");
 					sb.append((void *) it->getRight());
-					sb.append(" ]");
+					sb.append("\" }");
+					++id;
 				});
-				sb.append(" }");
+				sb.append(" ]");
 				return sb.toString();
 			}
 			
@@ -105,13 +111,18 @@ namespace cplus {
 				
 				explicit TreeNode(bool isLeft) : isRedColor(true), isLeft(isLeft) {}
 				
-				explicit TreeNode(const T &key) : value((T *) malloc(sizeof(T))), isRedColor(true), isLeft(false) {
-					memory::copy(key, *this->value);
+				explicit TreeNode(const K &key, const V &value)
+						: key((K *) malloc(sizeof(K))), value((V *) malloc(sizeof(V))), isRedColor(true),
+						  isLeft(false) {
+					memory::copy(key, *this->key);
+					memory::copy(value, *this->value);
 				}
 				
-				TreeNode(bool red, bool isLeft, TreeNode *parent, const T &key)
-						: isRedColor(red), value((T *) malloc(sizeof(T))), isLeft(false), parent(parent) {
-					memory::copy(key, *this->value);
+				TreeNode(bool red, bool isLeft, TreeNode *parent, const K &key, const V &value)
+						: isRedColor(red), key((K *) malloc(sizeof(K))), value((V *) malloc(sizeof(V))), isLeft(false),
+						  parent(parent) {
+					memory::copy(key, *this->key);
+					memory::copy(value, *this->value);
 				}
 				
 				void forEach(std::function<void(TreeNode *)> func) {
@@ -139,7 +150,7 @@ namespace cplus {
 				
 				TreeNode *getRight() const { return right; }
 				
-				T *get() const { return value; }
+				K *get() const { return key; }
 				
 				void setParent(TreeNode *parent) {
 					TreeNode::parent = parent;
@@ -161,8 +172,8 @@ namespace cplus {
 					}
 				}
 				
-				void setKey(T *key) {
-					TreeNode::value = key;
+				void setKey(K *key) {
+					TreeNode::key = key;
 				}
 				
 				TreeNode *leftRotate() {
@@ -173,11 +184,11 @@ namespace cplus {
 					return rightRotate(this);
 				}
 				
-				TreeNode *insert(const T &value) {
-					return insert(this, value);
+				TreeNode *insert(const K &key, const V &value) {
+					return insert(this, key, value);
 				}
 				
-				T *find(const T &value) {
+				V *find(const K &value) {
 					auto ret = find(this, value);
 					if (ret == nullptr)return nullptr;
 					else return ret->value;
@@ -314,16 +325,16 @@ namespace cplus {
 					return node;
 				}
 				
-				static TreeNode *insert(TreeNode *root, const T &value) {
+				static TreeNode *insert(TreeNode *root, const K &key, const V &value) {
 					if (root == nullptr) {
-						return new TreeNode(false, false, nullptr, value);
+						return new TreeNode(false, false, nullptr, key, value);
 					}
 					TreeNode *state = root;
 					while (state != nullptr) {
-						if (value == *state->value) break;
-						else if (value <= *state->value) {
+						if (key == *state->key) memory::copy(value, *state->value);
+						else if (key <= *state->key) {
 							if (state->left == nullptr) {
-								state->left = new TreeNode(true, true, state, value);
+								state->left = new TreeNode(true, true, state, key, value);
 								fixAfterInsertion(state->left);
 								break;
 							} else {
@@ -331,7 +342,7 @@ namespace cplus {
 							}
 						} else {
 							if (state->right == nullptr) {
-								state->right = new TreeNode(true, false, state, value);
+								state->right = new TreeNode(true, false, state, key, value);
 								fixAfterInsertion(state->right);
 								break;
 							} else {
@@ -342,18 +353,18 @@ namespace cplus {
 					return root;
 				}
 				
-				static TreeNode *find(TreeNode *root, const T &value) {
-//					std::cout << "Set: static: finding value: " << value << std::endl;
+				static TreeNode *find(TreeNode *root, const K &value) {
+//					std::cout << "Map: static: finding key: " << key << std::endl;
 					TreeNode *state = root;
-//					std::cout << "Set: static: state: " << state << std::endl;
+//					std::cout << "Map: static: state: " << state << std::endl;
 					while (state != nullptr) {
-						if (value == *state->value) break;
-						else if (value <= *state->value) {
+						if (value == *state->key) break;
+						else if (value <= *state->key) {
 							state = state->left;
 						} else {
 							state = state->right;
 						}
-//						std::cout << "Set: static: state: " << state << std::endl;
+//						std::cout << "Map: static: state: " << state << std::endl;
 					}
 					return state;
 				}
@@ -376,7 +387,8 @@ namespace cplus {
 				TreeNode *parent = nullptr;
 				TreeNode *left = nullptr;
 				TreeNode *right = nullptr;
-				T *value = nullptr;
+				K *key = nullptr;
+				V *value = nullptr;
 			};
 			
 			TreeNode *root = nullptr;
@@ -384,4 +396,4 @@ namespace cplus {
 	}
 }
 
-#endif //CPLUS_SET_H
+#endif //CPLUS_MAP_H

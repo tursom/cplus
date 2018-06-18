@@ -20,7 +20,7 @@
 #include "cplus/test/utils.h"
 #include "cplus/thread/Thread.h"
 #include "cplus/socket/ServerSocket.h"
-#include "cplus/utils/Set.h"
+#include "cplus/utils/Set.hpp"
 
 using namespace cplus::lang;
 using namespace cplus::utils;

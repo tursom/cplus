@@ -37,7 +37,7 @@ namespace cplus {
 			}
 			
 			bool push(const T &value) {
-//				std::cout << "ArrayStack: bool push(const T &value): endpoint:" << endPoint << std::endl;
+//				std::cout << "ArrayStack: bool push(const K &key): endpoint:" << endPoint << std::endl;
 				//检查是否已到数据块边界
 				if (endPoint == blockSize) {
 					//保存last状态
@@ -71,7 +71,7 @@ namespace cplus {
 			}
 			
 			T *pop() {
-//				std::cout << "ArrayStack: T *pop(): endpoint:" << endPoint << std::endl;
+//				std::cout << "ArrayStack: K *pop(): endpoint:" << endPoint << std::endl;
 				static T *lastValue = (T *) malloc(sizeof(T));
 				//检查是否还有剩余元素
 				if (endPoint == 0) return nullptr; //如果没有则返回 nullptr
@@ -80,7 +80,7 @@ namespace cplus {
 			}
 			
 			bool pop(const T &buffer) {
-//				std::cout << "ArrayStack: bool pop(const T &buffer): endpoint:" << endPoint << std::endl;
+//				std::cout << "ArrayStack: bool pop(const K &buffer): endpoint:" << endPoint << std::endl;
 				//检查是否还有剩余元素
 				//检查是否已到数据块边界
 				if (endPoint == 0) {
@@ -105,7 +105,7 @@ namespace cplus {
 			}
 			
 			void pop(T *&buffer) {
-//				std::cout << "ArrayStack: void pop(T *&buffer): endpoint:" << endPoint << std::endl;
+//				std::cout << "ArrayStack: void pop(K *&buffer): endpoint:" << endPoint << std::endl;
 				//检查是否还有剩余元素
 				//检查是否已到数据块边界
 				if (endPoint == 0) {

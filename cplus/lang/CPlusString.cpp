@@ -91,5 +91,9 @@ namespace cplus {
 		u_int16_t CPlusString::getCited() const {
 			return cited;
 		}
+		
+		size_t CPlusString::getSize() const {
+			return strlen(str) + 1;
+		}
 	}
 }

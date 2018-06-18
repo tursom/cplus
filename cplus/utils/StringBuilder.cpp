@@ -7,10 +7,74 @@
 #include "../lang/Double.h"
 #include "../lang/String.h"
 #include "../lang/CPlusString.h"
+#include "Set.hpp"
+#include "Map.hpp"
 
 
 namespace cplus {
 	namespace utils {
+		/**
+		 * 将字符串转移
+		 * @param buffer 缓冲区
+		 * @param oldStr 旧字符串
+		 * @param strSize 旧字符串大小。请保证缓冲区的大小至少为旧字符串长度的两倍。
+		 */
+		void escapeString(char *buffer, const char *oldStr, size_t strSize) {
+			size_t index = 0;
+			for (size_t i = 0; i < strSize; ++i) {
+				switch (oldStr[i]) {
+					case '\a':
+						buffer[index++] = '\\';
+						buffer[index++] = 'a';
+						break;
+					case '\b':
+						buffer[index++] = '\\';
+						buffer[index++] = 'b';
+						break;
+					case '\f':
+						buffer[index++] = '\\';
+						buffer[index++] = 'f';
+						break;
+					case '\n':
+						buffer[index++] = '\\';
+						buffer[index++] = 'n';
+						break;
+					case '\r':
+						buffer[index++] = '\\';
+						buffer[index++] = 'r';
+						break;
+					case '\t':
+						buffer[index++] = '\\';
+						buffer[index++] = 't';
+						break;
+					case '\v':
+						buffer[index++] = '\\';
+						buffer[index++] = 'v';
+						break;
+					case '\\':
+						buffer[index++] = '\\';
+						buffer[index++] = '\\';
+						break;
+					case '\?':
+						buffer[index++] = '\\';
+						buffer[index++] = '\?';
+						break;
+					case '\'':
+						buffer[index++] = '\\';
+						buffer[index++] = '\'';
+						break;
+					case '\"':
+						buffer[index++] = '\\';
+						buffer[index++] = '\"';
+						break;
+					default:
+						buffer[index++] = oldStr[i];
+						break;
+				}
+			}
+			buffer[index] = 0;
+		}
+		
 		StringBuilder &StringBuilder::append(const ::cplus::lang::String &string) {
 			value.append(string.c_str());
 			return *this;
@@ -48,7 +112,12 @@ namespace cplus {
 		}
 		
 		StringBuilder &StringBuilder::append(const lang::CPlusString &value) {
-			this->value.append(value.getStr());
+			auto strSize = value.getSize();
+			auto *buffer = new char[strSize * 2];
+			auto str = value.getStr();
+			escapeString(buffer, value.getStr(), strSize);
+			this->value.append(buffer);
+			delete buffer;
 			return *this;
 		}
 		

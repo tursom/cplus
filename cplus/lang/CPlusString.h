@@ -35,6 +35,8 @@ namespace cplus {
 			
 			size_t getBufferSize() const;
 			
+			size_t getSize() const;
+			
 			bool operator==(const CPlusString &rhs) const;
 			
 			bool operator!=(const CPlusString &rhs) const;

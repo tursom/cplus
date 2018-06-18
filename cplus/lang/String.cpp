@@ -9,7 +9,7 @@
 #include <memory>
 #include "ByteArray.h"
 #include "CPlusString.h"
-#include "../utils/Set.h"
+#include "../utils/Set.hpp"
 #include "../utils/StringBuilder.h"
 #include "../utils/ArrayStack.hpp"
 
@@ -22,9 +22,17 @@ namespace cplus {
 			
 			~StringSet() {
 				forEach([](CPlusString *value) {
-//					std::cout << "StringSet: ~StringSet(): deleting: " << &value << " :" << value.getStr() << std::endl;
+//					std::cout << "StringSet: ~StringSet(): deleting: " << &key << " :" << key.getStr() << std::endl;
 					delete value;
 				});
+				TreeNode *state = root;
+				utils::ArrayStack<TreeNode *> taskQueue;
+				while (true) {
+					if (state->getLeft() != nullptr)taskQueue.push(state->getLeft());
+					if (state->getRight() != nullptr)taskQueue.push(state->getRight());
+					delete state;
+					if (!taskQueue.pop(state))break;
+				}
 			}
 			
 			CPlusString *insert(CPlusString &value) {
@@ -40,10 +48,10 @@ namespace cplus {
 			}
 			
 			CPlusString *get(CPlusString &value) {
-//				std::cout << "Set: getting: " << value << std::endl;
+//				std::cout << "Set: getting: " << key << std::endl;
 				auto ret = this->root->find(value);
 				if (ret == nullptr) {
-//					std::cout << "Set: not find value, inserting" << std::endl;
+//					std::cout << "Set: not find key, inserting" << std::endl;
 					ret = insert(value);
 				}
 				return ret;
@@ -123,16 +131,19 @@ namespace cplus {
 				String toString() {
 					utils::StringBuilder sb;
 					size_t stringID = 0;
-					sb.append("{ ");
+					sb.append("[ ");
 					
 					forEach([&sb, &stringID](CPlusString *value) {
-						sb.append("[ String ID: ");
+						if (stringID != 0) {
+							sb.append(", ");
+						}
+						sb.append("{ \"String ID\": ");
 						sb.append(stringID++);
-						sb.append(", str:\"");
+						sb.append(R"(, "str":")");
 						sb.append(*value);
-						sb.append("\" ]");
+						sb.append("\" }");
 					});
-					sb.append(" }");
+					sb.append(" ]");
 					return sb.toString();
 				}
 				
@@ -315,7 +326,7 @@ namespace cplus {
 				}
 				
 				static TreeNode *find(TreeNode *root, const CPlusString &value) {
-//					std::cout << "Set: static: finding value: " << value << std::endl;
+//					std::cout << "Set: static: finding key: " << key << std::endl;
 					TreeNode *state = root;
 //					std::cout << "Set: static: state: " << state << std::endl;
 					while (state != nullptr) {
