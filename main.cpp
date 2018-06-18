@@ -123,7 +123,7 @@ int main() {
 		std::cout << e.getStackTrace().c_str() << std::endl;
 	}
 	
-	std::cout << String::allString() << std::endl;
+	std::cout << String::bufferStruct() << std::endl;
 	std::cout << strlen(String::allString()) << std::endl;
 	std::cout << String::usedSize() << std::endl;
 

@@ -355,8 +355,7 @@ namespace cplus {
 				
 				/**
 				 *
-				 * @param node
-				 * @return
+				 * @param node 新插入的节点
 				 */
 				static TreeNode *fixAfterInsertion(TreeNode *node) {
 					if (node == nullptr)return nullptr;
@@ -371,7 +370,7 @@ namespace cplus {
 							if (isRed(node->parent)) {
 								//如果有两个红节点相邻
 								//TODO 请移步 /cplus/lang/String.cpp 其中专为String优化的Set对应的注释
-								node = flipColors(rightRotate(node->parent));
+								node = flipColors(rightRotate(node->parent->parent));
 							}
 						} else {
 							//如果 node 是 parent 的 right 节点 l

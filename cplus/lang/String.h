@@ -61,6 +61,8 @@ namespace cplus {
 			 * @return 所有字符串的JSON数据
 			 */
 			static char *allString();
+			
+			static char *bufferStruct();
 		
 			static size_t usedSize();
 		private:
