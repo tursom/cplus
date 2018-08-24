@@ -71,11 +71,11 @@ namespace cplus {
 			}
 			buffer[index] = 0;
 		}
-		
+
 		CPlusClass(StringSet) {
 		public:
 			StringSet() = default;
-			
+
 			~StringSet() {
 				if (toCStringBuffer != nullptr)free(toCStringBuffer);
 				forEach([](CPlusString *value) {
@@ -91,8 +91,9 @@ namespace cplus {
 					if (!taskQueue.pop(state))break;
 				}
 			}
-			
+
 			CPlusString *insert(CPlusString &value) {
+//				std::cout << value.getStr() << std::endl;
 				TreeNode *ist;
 				if (root == nullptr) {
 					ist = new TreeNode(false, false, nullptr, value);
@@ -103,7 +104,7 @@ namespace cplus {
 				}
 				return ist->get();
 			}
-			
+
 			CPlusString *get(CPlusString &value) {
 //				std::cout << "Set: getting: " << key << std::endl;
 				auto ret = this->root->find(value);
@@ -113,7 +114,7 @@ namespace cplus {
 				}
 				return ret;
 			}
-			
+
 			void forEach(const std::function<void(CPlusString *)> &func) const {
 				if (root != nullptr)
 					root->forEach([&func](TreeNode *value) {
@@ -121,13 +122,13 @@ namespace cplus {
 						else func(value->get());
 					});
 			}
-			
+
 			char *toCString() const {
 				if (toCStringBuffer != nullptr) return toCStringBuffer;
 				utils::StringBuilder sb;
 				size_t stringID = 0;
 				sb.append("[");
-				
+
 				root->forEach([&sb, &stringID](TreeNode *value) {
 					if (stringID != 0) {
 						sb.append(",");
@@ -139,18 +140,19 @@ namespace cplus {
 //					sb.append("{\"StringID\":");
 //					sb.append(stringID++);
 //					sb.append(R"(,"str":")");
-					
-					sb.append(R"({"str":")");
-					
-					auto strSize = value->getSize();
-					auto *buffer = new char[strSize * 2];
+
+//					sb.append(R"({"str":")");
+
+					sb.append("\"");
 					auto str = value->get()->getStr();
-					escapeString(buffer, value->get()->getStr(), strSize);
+					auto strSize = strlen(str) + 1;
+					auto *buffer = new char[strSize * 2];
+					escapeString(buffer, str, strSize);
 					sb.append(buffer);
 					delete buffer;
-					sb.append(R"(","color":")");
-					sb.append(value->isRed() ? "RED" : "BLACK");
-					sb.append("\"}");
+//					sb.append(R"(","color":")");
+//					sb.append(value->isRed() ? "RED" : "BLACK");
+					sb.append("\"");
 				});
 				sb.append("]");
 				auto swap = CPlusString(sb.c_str());
@@ -158,7 +160,7 @@ namespace cplus {
 				swap.setToNull();
 				return toCStringBuffer;
 			}
-			
+
 			char *getStruction() const {
 				utils::StringBuilder sb = utils::StringBuilder();
 				size_t id = 0;
@@ -182,14 +184,14 @@ namespace cplus {
 					sb.append(R"(","leftOrRight":")");
 					sb.append(it->isLeftNode() ? "LEFT" : "RIGHT");
 					sb.append(R"(","value":")");
-					
+
 					auto strSize = it->get()->getSize();
 					auto *buffer = new char[strSize * 2];
 					auto str = it->get()->getStr();
 					escapeString(buffer, it->get()->getStr(), strSize);
 					sb.append(buffer);
 					delete buffer;
-					
+
 					sb.append("\"}");
 					++id;
 				});
@@ -199,25 +201,26 @@ namespace cplus {
 				swap.setToNull();
 				return struction;
 			}
-			
+
 			size_t usedSize() {
 				size_t strSize = 0;
 				forEach([&strSize](CPlusString *value) {
 					strSize += value->getBufferSize();
 				});
-				return sizeof(*this) + sizeof(*root) * root->getSize() + root->getSize() * sizeof(CPlusString) +
+				return sizeof(*this) + sizeof(*root) * root->getSize() +
+				       root->getSize() * sizeof(CPlusString) +
 				       strSize;
 			}
-			
+
 			class RBTException : public system::Exception {
 			public:
 				RBTException() = default;
-				
+
 				explicit RBTException(const char *message) : Exception(message) {}
-				
+
 				explicit RBTException(const lang::String &message) : Exception(message) {}
 			};
-		
+
 		private:
 			class TreeNode {
 			public:
@@ -226,40 +229,41 @@ namespace cplus {
 					toCStringBuffer = nullptr;
 					struction = nullptr;
 				}
-				
+
 				TreeNode(bool red, bool isLeft, TreeNode *parent, CPlusString &key)
-						: isRedColor(red), value((CPlusString *) malloc(sizeof(CPlusString))), isLeft(isLeft),
+						: isRedColor(red), value((CPlusString *) malloc(sizeof(CPlusString))),
+						  isLeft(isLeft),
 						  parent(parent) {
 					if (toCStringBuffer != nullptr)free(toCStringBuffer);
 					toCStringBuffer = nullptr;
 					struction = nullptr;
-					
+
 					this->value->setStr(key.getStr(), key.getBufferSize());
 					key.setToNull();
 				}
-				
+
 				void isRed(bool isRed) { isRedColor = isRed; }
-				
+
 				bool isRed() { return isRedColor; }
-				
+
 				inline TreeNode *getParent() const { return parent; }
-				
+
 				inline TreeNode *getLeft() const { return left; }
-				
+
 				TreeNode *getRight() const { return right; }
-				
+
 				CPlusString *get() const { return value; }
-				
+
 				TreeNode *insert(CPlusString &value) {
 					return insert(this, value);
 				}
-				
+
 				CPlusString *find(const CPlusString &value) {
 					auto ret = find(this, value);
 					if (ret == nullptr)return nullptr;
 					else return ret->value;
 				}
-				
+
 				void forEach(const std::function<void(TreeNode *)> &func) const {
 					auto *state = const_cast<TreeNode *>(this);
 					utils::ArrayStack<TreeNode *> taskQueue;
@@ -270,11 +274,11 @@ namespace cplus {
 						if (!taskQueue.pop(state))break;
 					}
 				}
-				
+
 				inline bool isLeftNode() { return isLeft; }
-				
+
 				inline bool isRightNode() { return !isLeft; }
-				
+
 				inline void setLeft(TreeNode *node) {
 					left = node;
 					if (node != nullptr) {
@@ -282,7 +286,7 @@ namespace cplus {
 						node->isLeft = true;
 					}
 				}
-				
+
 				inline void setRight(TreeNode *node) {
 					right = node;
 					if (node != nullptr) {
@@ -290,20 +294,20 @@ namespace cplus {
 						node->isLeft = false;
 					}
 				}
-				
+
 				u_int32_t getSize() {
 					return getSize(this);
 				}
-				
+
 				static u_int32_t getSize(TreeNode *p) {
 					if (p == nullptr)return 0;
 					else return p->size;
 				}
-				
+
 				static bool isBlack(TreeNode *p) { return p == nullptr || !p->isRedColor; }
-				
+
 				static bool isRed(TreeNode *p) { return p != nullptr && p->isRedColor; }
-				
+
 				static TreeNode *leftRotate(TreeNode *root) {
 					if (root == nullptr)return root;
 					auto right = root->right;
@@ -317,23 +321,23 @@ namespace cplus {
 					}
 					//将 right 的 left 传递给 root
 					root->setRight(right->left);
-					
+
 					//重设 parent 为 right (1)
 					root->parent = right;
 					root->parent->left = root;
 					root->isLeft = true;
-					
+
 					//交换颜色
 					bool red = root->isRedColor;
 					root->isRedColor = right->isRedColor;
 					right->isRedColor = red;
-					
+
 					root->size = getSize(root->left) + getSize(root->right) + 1;
 					right->size = root->size + getSize(right->right) + 1;
-					
+
 					return right;
 				}
-				
+
 				static TreeNode *rightRotate(TreeNode *node) {
 					if (node == nullptr)return nullptr;
 					//检查是否符合右旋条件
@@ -345,29 +349,30 @@ namespace cplus {
 					} else {
 						left->parent = nullptr;
 					}
-					
+
 					//将 left 的 right 传递给 node
 					node->setLeft(left->right);
-					
+
 					//重设 parent 为 left
 					node->parent = left;
 					node->parent->right = node;
 					node->isLeft = false;
-					
+
 					//交换颜色
 					bool red = node->isRedColor;
 					node->isRedColor = left->isRedColor;
 					left->isRedColor = red;
-					
+
 					node->size = getSize(node->right) + getSize(node->left) + 1;
 					left->size = node->size + getSize(left->left) + 1;
-					
+
 					return left;
 				}
-				
+
 				static TreeNode *flipColors(TreeNode *root) {
 					//在保证黑高不变的情况下对颜色进行翻转
-					if (root != nullptr && !root->isRedColor && isRed(root->right) && isRed(root->left)) {
+					if (root != nullptr && !root->isRedColor && isRed(root->right) &&
+					    isRed(root->left)) {
 						//要求两个子节点都是红色的，根节点是黑色的
 						root->isRed(root->parent != nullptr);
 						root->left->isRed(false);
@@ -376,7 +381,7 @@ namespace cplus {
 					}
 					return root;
 				}
-				
+
 				/**
 				 *
 				 * @param node 新插入的节点
@@ -431,7 +436,7 @@ namespace cplus {
 						}
 					}
 				}
-				
+
 				static TreeNode *insert(TreeNode *root, CPlusString &value) {
 					if (root == nullptr) {
 						return new TreeNode(false, false, nullptr, value);
@@ -460,7 +465,7 @@ namespace cplus {
 					}
 					return ist;
 				}
-				
+
 				static TreeNode *find(TreeNode *root, const CPlusString &value) {
 //					std::cout << "Set: static: finding key: " << key << std::endl;
 					TreeNode *state = root;
@@ -476,7 +481,7 @@ namespace cplus {
 					}
 					return state;
 				}
-				
+
 				static TreeNode *del(TreeNode *node) {
 					if (node == nullptr)return nullptr;
 					else if (node->left == nullptr) {
@@ -492,7 +497,7 @@ namespace cplus {
 					}
 					return node;
 				}
-				
+
 				static TreeNode *rightMin(TreeNode *node) {
 					if (node == nullptr)return nullptr;
 					else if (node->right == nullptr)return node;
@@ -504,7 +509,7 @@ namespace cplus {
 					}
 					return node;
 				}
-				
+
 				/**
 				 *
 				 * @param node 已经删除的节点
@@ -515,10 +520,10 @@ namespace cplus {
 					else if (node->isRedColor) {
 						return node->parent;
 					} else if (node->parent == nullptr) {
-					
+
 					}
 				}
-				
+
 				inline static void replaceWith(TreeNode *oldNode, TreeNode *newNode) {
 					if (oldNode == nullptr)return;
 					if (oldNode->parent == nullptr)return;
@@ -528,7 +533,7 @@ namespace cplus {
 						oldNode->parent->setRight(newNode);
 					}
 				}
-			
+
 			private:
 				bool isLeft;
 				bool isRedColor;
@@ -538,99 +543,128 @@ namespace cplus {
 				TreeNode *right = nullptr;
 				CPlusString *value = nullptr;
 			};
-			
+
 			TreeNode *root = nullptr;
 			static char *toCStringBuffer;
 			static char *struction;
 		};
-		
+
 		char *StringSet::toCStringBuffer = nullptr;
 		char *StringSet::struction = nullptr;
 
 //		StringSet *stringSet = new StringSet();
 		StringSet stringSet;
-		
+
 		String &String::operator=(const String &string) {
 			value = string.value;
 			return *this;
 		}
-		
+
 		String String::toString() const {
 			return *this;
 		}
-		
+
 		String::String(const std::string &str) {
 //			if (stringSet == nullptr) stringSet = new StringSet();
 			auto string = CPlusString(str);
 //			CPlusString *index = stringSet->get(string);
 			CPlusString *index = stringSet.get(string);
 			value = index;
-			this->value->inCited();
 		}
-		
+
 		String::String(const char *str) {
 //			if (stringSet == nullptr) stringSet = new StringSet();
 			auto string = CPlusString(str);
 //			CPlusString *index = stringSet->get(string);
 			CPlusString *index = stringSet.get(string);
 			value = index;
-			this->value->inCited();
 		}
-		
+
 		String::String() : String("") {}
-		
+
 		String operator+(const std::string &str1, const String &str2) {
 			return String(str1 + str2.value->getStr());
 		}
-		
-		String String::operator+(const std::string &str1) {
+
+		String String::operator+(const std::string &str1) const {
 			return String(value->getStr() + str1);
 		}
-		
+
 		bool String::operator==(const String &rhs) const {
 			return value == rhs.value;
 		}
-		
+
 		bool String::operator!=(const String &rhs) const {
 			return !(rhs == *this);
 		}
-		
+
 		String::String(const ByteArray &buffer) {
 //			if (stringSet == nullptr) stringSet = new StringSet();
 			auto string = CPlusString(buffer);
 //			const CPlusString *index = stringSet->get(string);
 			CPlusString *index = stringSet.get(string);
 			value = index;
-			this->value->inCited();
 		}
-		
-		
+
+
 		const char *String::c_str() const {
 			return value->getStr();
 		}
-		
+
 		std::string String::stdString() const {
 			return std::string(value->getStr());
 		}
-		
+
 		String::String(const String &str) : value(str.value) {
-			this->value->inCited();
 		}
-		
-		String::~String() {
-			this->value->unCited();
-		}
-		
+
+		String::~String() = default;
+
 		char *String::allString() {
 			return stringSet.toCString();
 		}
-		
+
 		size_t String::usedSize() {
 			return stringSet.usedSize();
 		}
-		
+
 		char *String::bufferStruct() {
 			return stringSet.getStruction();
+		}
+
+		String String::operator+(const String &str1) const {
+			return String(value->getStr() + str1);
+		}
+
+
+		static utils::Set<String> setStringSet;
+
+		String &String::getString(const String &string) {
+			return *setStringSet.get(string);
+		}
+
+		String &String::getString(const char *string) {
+			return *setStringSet.get(String(string));
+		}
+
+		bool String::operator<(const String &rhs) const {
+			return this->value < rhs.value;
+		}
+
+		bool String::operator>(const String &rhs) const {
+			return rhs < *this;
+		}
+
+		bool String::operator<=(const String &rhs) const {
+			return !(rhs < *this);
+		}
+
+		bool String::operator>=(const String &rhs) const {
+			return !(*this < rhs);
+		}
+
+		String::operator std::string() const {
+			return std::string(value->getStr());
 		}
 	}
 }

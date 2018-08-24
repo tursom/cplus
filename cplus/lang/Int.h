@@ -14,17 +14,21 @@ namespace cplus {
 		class Int : public Object {
 		public:
 			explicit Int(int32_t value) : value(value) {}
-			
+
 			int32_t get() const { return value; }
-			
+
 			int32_t &get() { return value; }
-			
+
 			String toString() const override;
-			
+
+			String operator+(const String &string);
+
+			friend String operator+(const String &string, Int i);
+
 			explicit operator Long() { return Long(value); }
-			
+
 			static String toString(int32_t value);
-		
+
 		private:
 			int32_t value;
 		};

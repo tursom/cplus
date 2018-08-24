@@ -5,8 +5,8 @@
 #include <map>
 #include <set>
 #include <algorithm>
-#include <w32api/profileapi.h>
 #include <arpa/inet.h>
+#include <cstring>
 #include "cplus/lang/String.h"
 #include "cplus/lang/Int.h"
 #include "cplus/system/time.h"
@@ -21,6 +21,7 @@
 #include "cplus/thread/Thread.h"
 #include "cplus/socket/ServerSocket.h"
 #include "cplus/utils/Set.hpp"
+#include "cplus/system/io.h"
 
 using namespace cplus::lang;
 using namespace cplus::utils;
@@ -50,78 +51,75 @@ void throwAnException() {
 }
 
 class T1 {
-	bool isLeft;
-	bool red;
-	u_int32_t size = 1;
+	bool isLeft{};
+	bool red{};
+	uint32_t size = 1;
 	T1 *parent = nullptr;
 	T1 *left = nullptr;
 	T1 *right = nullptr;
 };
 
 class T2 {
-	bool isLeft;
-	bool red;
-	u_int32_t size = 1;
+	bool isLeft{};
+	bool red{};
+	uint32_t size = 1;
 	T2 *parent = nullptr;
 	T2 *left = nullptr;
 	T2 *right = nullptr;
 };
 
+uint16_t port = 12347;
+
 int main() {
-	std::cout << sizeof(T1) << std::endl
-	          << sizeof(T2) << std::endl;
-	
-	StringBuilder s_structBuffer;
-	
-	auto s_getValue = [](const int *value) -> String {
-		return Int(*value).toString();
-	};
-	
-	Set<int> s;
-	for (int i = 0; i < 100; ++i) {
-		s.insert(i);
-		s.getStruction(s_getValue, s_structBuffer);
-		std::cout << s_structBuffer.c_str() << std::endl << "," << std::endl;
-	}
-	
-	for (int i = 0; i < 100; ++i) {
-		auto find = s.find(i);
-		std::cout << ((find == nullptr) ? 0 : *find) << ' ' << std::flush;
-	}
-	std::cout << std::endl;
-	
-	s.forEach([](int value) {
-		std::cout << value << ' ' << std::flush;
-	});
-	std::cout << std::endl;
-	
+	//启动服务器
+	Thread([]() {
+		SocketServer server(port);
+		server.listen();
+		println(2, &String::getString("server started at port: "), &Short::get(port));
+		try {
+			auto socket = server.accept();
+			println(2, &String::getString("server got connection from:"), &socket.getAddress());
+			auto recv = socket.recv(1024);
+			sout << "server recv from:" << socket.getAddress() << endl
+			     << ">>>" << recv.getBuffer() << endl;
+			socket.send(recv);
+		} catch (Exception e) {
+			std::cerr << e.getMessage().c_str() << std::endl
+			          << e.getStackTrace().c_str() << std::endl;
+		} catch (std::exception e) {
+			std::cerr << "server exception: " << e.what() << std::endl;
+		}
+	}).start();
+
+
+	Thread::msleep(100);
 	try {
-		std::string ss1("123");
-		std::string ss2("1234");
-		std::string ss3("12345");
-		std::cout << std::string("12345").size() << std::endl;
-		String s1("123"), s2(ss1.c_str());
-		std::cout << (s1.c_str() == s2.c_str() ? "true" : "false") << std::endl;
-		String s3("1234"), s4(ss2.c_str());
-		std::cout << (s3.c_str() == s4.c_str() ? "true" : "false") << std::endl;
-		String s5("12345"), s6(ss3.c_str());
-		std::cout << (s5.c_str() == s6.c_str() ? "true" : "false") << std::endl;
-		throw Exception("hello");
+		auto message = ByteArray("hello?", sizeof("hello?"));
+		auto socket = Socket("127.0.0.1", port);
+
+		socket.connect();
+		println(2, &String::getString("connecting to server: localhost: )"),
+		        &String::getString(String(port)));
+
+		Thread::msleep(100);
+		ssize_t sendSize = socket.send(message);
+		if (sendSize == -1) {
+			throw Exception("send error: " + Long(errno).toString());
+		} else {
+			println(2, &String::getString("sending size: "),
+			        &String::getString(String(sendSize)));
+		}
+
+		auto recv = socket.recv(1024);
+		println(2, &String::getString("recving from server:\n>>>"),
+		        &String::getString(String(recv)));
+
 	} catch (Exception e) {
-		std::cout << e.getMessage().c_str() << std::endl;
-		std::cout << e.getStackTrace().c_str() << std::endl;
+		std::cerr << e.getMessage().c_str() << std::endl
+		          << e.getStackTrace().c_str() << std::endl;
+	} catch (std::exception e) {
+		std::cerr << "client exception: " << e.what() << std::endl;
 	}
-	
-	try {
-		throwAnException();
-	} catch (Exception e) {
-		std::cout << e.getMessage().c_str() << std::endl;
-		std::cout << e.getStackTrace().c_str() << std::endl;
-	}
-	
-	std::cout << String::bufferStruct() << std::endl;
-	std::cout << strlen(String::allString()) << std::endl;
-	std::cout << String::usedSize() << std::endl;
 
 //	ServerHandler serverHandler;
 //	Thread([]() {

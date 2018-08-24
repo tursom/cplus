@@ -1,8 +1,9 @@
-# cmake_minimum_required(VERSION <specify CMake version here>)
+cmake_minimum_required(VERSION 2.8.12)
 project(cplus)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
+add_definitions(-std=c++11)
 
 add_executable(
         cplus main.cpp cplus/lang/Int.cpp cplus/lang/Int.h cplus/lang/String.cpp cplus/lang/String.h
@@ -21,3 +22,11 @@ add_executable(
         cplus/socket/Socket.h cplus/lang/ByteArray.cpp cplus/lang/ByteArray.h cplus/lang/Byte.cpp
         cplus/system/Exception.cpp cplus/system/Exception.h cplus/utils/Set.hpp cplus/utils/Queue.cpp
         cplus/utils/Queue.h cplus/lang/CPlusString.cpp cplus/lang/CPlusString.h cplus/utils/Map.hpp)
+
+find_package(Threads REQUIRED)
+if(THREADS_HAVE_PTHREAD_ARG)
+    target_compile_options(cplus PUBLIC "-pthread")
+endif()
+if(CMAKE_THREAD_LIBS_INIT)
+    target_link_libraries(cplus "${CMAKE_THREAD_LIBS_INIT}")
+endif()

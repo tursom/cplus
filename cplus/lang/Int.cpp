@@ -12,11 +12,19 @@ namespace cplus {
 			sprintf(str, "%d", value);
 			return String(str);
 		}
-		
+
 		String Int::toString(int32_t value) {
 			char str[12];
 			sprintf(str, "%d", value);
 			return String(str);
+		}
+
+		String Int::operator+(const String &string) {
+			return this->toString().operator+(string);
+		}
+
+		String operator+(const String &string, Int i) {
+			return String(string + i.toString());
 		}
 	}
 }

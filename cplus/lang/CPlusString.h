@@ -51,10 +51,6 @@ namespace cplus {
 			
 			char *getStr() const;
 			
-			inline void inCited() { cited++; }
-			
-			inline void unCited() { cited--; }
-			
 			u_int16_t getCited() const;
 		
 		private:

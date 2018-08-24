@@ -20,8 +20,8 @@ namespace cplus {
 		CPlusClass(Set) {
 		public:
 			
-			Set() {}
-			
+			Set() = default;
+
 			Set(T *array, size_t arraySize) : Set() {
 				for (size_t i = 0; i < arraySize; ++i) {
 					insert(array[i]);
@@ -29,7 +29,7 @@ namespace cplus {
 			}
 			
 			~Set() {
-				std::cout << "~Set()" << std::endl;
+//				std::cout << "~Set()" << std::endl;
 				forEach([](const T &value) {
 					delete &value;
 				});
@@ -85,7 +85,7 @@ namespace cplus {
 					if (id != 0) {
 						sb.append(",");
 					}
-					sb.append("{\"value\":\"");
+					sb.append(R"({"value":")");
 					sb.append((void *) it->get());
 					sb.append("\"}");
 					++id;
@@ -102,7 +102,7 @@ namespace cplus {
 					if (id != 0) {
 						sb.append(",");
 					}
-					sb.append("{\"value\":\"");
+					sb.append(R"({"value":")");
 					sb.append(valueFunc(it->get()));
 					sb.append("\"}");
 					++id;
@@ -119,7 +119,7 @@ namespace cplus {
 					if (id != 0) {
 						buffer.append(",");
 					}
-					buffer.append("{\"value\":\"");
+					buffer.append(R"({"value":")");
 					buffer.append(valueFunc(it->get()));
 					buffer.append("\"}");
 					++id;
@@ -128,28 +128,28 @@ namespace cplus {
 			}
 			
 			void getStruction(std::function<lang::String(T *)> valueFunc, StringBuilder &buffer) const {
-				buffer = StringBuilder();
+				buffer = StringBuilder();   //重置buffer
 				size_t id = 0;
 				buffer.append("[");
 				root->forEach([&buffer, &id, &valueFunc](TreeNode *it) {
 					if (id != 0) {
 						buffer.append(",");
 					}
-					buffer.append("{\"node\":\"");
+					buffer.append(R"({"node":")");
 					buffer.append((void *) it);
-					buffer.append("\",\"parent\":\"");
+					buffer.append(R"(","parent":")");
 					buffer.append((void *) it->getParent());
-					buffer.append("\",\"left\":\"");
+					buffer.append(R"(","left":")");
 					buffer.append((void *) it->getLeft());
-					buffer.append("\",\"right\":\"");
+					buffer.append(R"(","right":")");
 					buffer.append((void *) it->getRight());
-					buffer.append("\",\"color\":\"");
+					buffer.append(R"(","color":")");
 					buffer.append(it->isRed() ? "RED" : "BLACK");
-					buffer.append("\",\"size\":\"");
+					buffer.append(R"(","size":")");
 					buffer.append((unsigned long) it->getSize());
-					buffer.append("\",\"leftOrRight\":\"");
+					buffer.append(R"(","leftOrRight":")");
 					buffer.append(it->isLeftNode() ? "LEFT" : "RIGHT");
-					buffer.append("\",\"value\":\"");
+					buffer.append(R"(","value":")");
 					buffer.append(valueFunc(it->get()));
 					buffer.append("\"}");
 					++id;
@@ -255,11 +255,11 @@ namespace cplus {
 					else return ret->key;
 				}
 				
-				u_int32_t getSize() {
+				uint32_t getSize() {
 					return getSize(this);
 				}
 				
-				static u_int32_t getSize(TreeNode *p) {
+				static uint32_t getSize(TreeNode *p) {
 					if (p == nullptr)return 0;
 					else return p->size;
 				}
@@ -386,7 +386,6 @@ namespace cplus {
 							}
 						}
 					}
-					return;
 				}
 				
 				static TreeNode *insert(TreeNode *root, const T &value) {
@@ -447,7 +446,7 @@ namespace cplus {
 			private:
 				bool isLeft;
 				bool isRedColor;
-				u_int32_t size = 1;
+				uint32_t size = 1;
 				TreeNode *parent = nullptr;
 				TreeNode *left = nullptr;
 				TreeNode *right = nullptr;

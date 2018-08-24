@@ -5,9 +5,18 @@
 #ifndef CPLUS_SYSTEM_IO_H
 #define CPLUS_SYSTEM_IO_H
 
-namespace cplus{
-    namespace system{
-    }
+#include "../lang/String.h"
+
+namespace cplus {
+	namespace system {
+		void print(int n, const lang::Object *message, ...);
+
+		void print(int n, const char *message, ...);
+
+		void println(int n, const lang::Object *message, ...);
+
+		void println(int n, const char *message, ...);
+	}
 }
 
 #endif //CPLUS_SYSTEM_IO_H
