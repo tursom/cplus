@@ -12,7 +12,10 @@
 namespace cplus {
 	namespace lang {
 		class ByteArray;
-		
+
+		/**
+		 * String
+		 */
 		CPlusClass(CPlusString) {
 		public:
 			CPlusString();
@@ -50,13 +53,10 @@ namespace cplus {
 			bool operator>=(const CPlusString &rhs) const;
 			
 			char *getStr() const;
-			
-			u_int16_t getCited() const;
-		
+
 		private:
 			char *str{};
 			size_t bufferSize{};
-			u_int16_t cited;
 		};
 	}
 }

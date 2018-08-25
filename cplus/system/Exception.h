@@ -29,15 +29,22 @@ namespace cplus {
 
 			explicit Exception(const lang::String &message, bool saveStack);
 
-			const lang::String &getMessage() const { return message; }
+			const lang::String &getMessage();
 
-			const lang::String getStackTrace() const { return stackTrace; }
+			const lang::String getStackTrace();
+
+			const lang::String getStackTrace() const;
 
 		private:
-			static lang::String getStack();
+			static int getStack(void **ary);
 
-			lang::String stackTrace;
-			lang::String message;
+			lang::String getStack() const;
+
+			void *ary[256];
+			int stack_count;
+
+			lang::String *stackTrace = nullptr;
+			const lang::String message;
 		};
 	}
 }

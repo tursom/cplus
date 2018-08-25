@@ -666,5 +666,9 @@ namespace cplus {
 		String::operator std::string() const {
 			return std::string(value->getStr());
 		}
+
+		String *String::getPointer() const {
+			return &getString(*this);
+		}
 	}
 }

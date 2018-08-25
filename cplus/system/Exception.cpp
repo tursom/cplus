@@ -11,11 +11,12 @@
 
 namespace cplus {
 	namespace system {
-		lang::String Exception::getStack() {
-			int max_size = 256;
-			void *ary[256] = {0};
-			int stack_count;
-			stack_count = backtrace(ary, max_size);
+		int Exception::getStack(void **ary) {
+			static int max_size = 256;
+			return backtrace(ary, max_size);
+		}
+
+		lang::String Exception::getStack() const {
 			auto buffer = backtrace_symbols(ary, stack_count);
 			utils::StringBuilder sb;
 //			sb.append("stack_count=");
@@ -35,17 +36,28 @@ namespace cplus {
 
 		Exception::Exception(const char *message) : Exception(lang::String(message)) {}
 
-		Exception::Exception() : Exception("") {}
+		Exception::Exception() : Exception("") {
+			stack_count = getStack(ary);
+		}
 
 		Exception::Exception(const char *message, bool saveStack)
 				: Exception(lang::String(message), saveStack) {}
 
-		Exception::Exception(const lang::String &message, bool saveStack) : message(message) {
-			if (saveStack) {
-				stackTrace = getStack();
-			} else {
-				stackTrace = lang::String("DO NOT SAVE STACK TRANCE");
+		Exception::Exception(const lang::String &message, bool saveStack) : message(message) {}
+
+		const lang::String Exception::getStackTrace() const {
+			return stackTrace == nullptr ? lang::String("null") : *stackTrace;
+		}
+
+		const lang::String Exception::getStackTrace() {
+			if (stackTrace == nullptr) {
+				stackTrace = getStack().getPointer();
 			}
+			return *stackTrace;
+		}
+
+		const lang::String &Exception::getMessage() {
+			return message;
 		}
 	}
 }

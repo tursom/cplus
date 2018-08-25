@@ -48,6 +48,8 @@ namespace cplus {
 			 */
 			std::string stdString() const;
 
+			String *getPointer() const;
+
 			bool operator==(const String &rhs) const;
 
 			bool operator!=(const String &rhs) const;
