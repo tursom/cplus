@@ -10,7 +10,6 @@
 #include "StringBuilder.h"
 #include "List.hpp"
 #include "../tools/class.h"
-#include "../thread/RunnableBase.h"
 
 namespace cplus {
 	namespace utils {
@@ -97,7 +96,7 @@ namespace cplus {
 			}
 			
 			
-			void forEach(cplus::thread::RunnableBase<T> runnable) {
+			void forEach(cplus::thread::Runnable runnable) {
 				List<T *> unitArrayList = this->unitArrayList;
 				int loopTime = 0;
 				unitArrayList.forEach([&](T *block) {

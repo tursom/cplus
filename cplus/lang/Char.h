@@ -15,22 +15,22 @@ namespace cplus {
 	namespace lang {
 		CPlusClass(Char) {
 		public:
-			Char() : Char(0) {}
-			
-			explicit Char(int8_t value) : value(value) {}
-			
-			inline int8_t get() const { return value; }
-			
-			inline int8_t &get() { return value; }
-			
+			Char();
+
+			explicit Char(char value);
+
+			inline char get() const { return value; }
+
+			inline char &get() { return value; }
+
 			String toString() const override;
-			
-			explicit operator int8_t() { return value; }
-			
-			static String toString(int8_t value);
-		
+
+			explicit operator char() { return value; }
+
+			static String toString(char value);
+
 		private:
-			int8_t value;
+			char value;
 		};
 	}
 }

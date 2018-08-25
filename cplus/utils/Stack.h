@@ -10,7 +10,6 @@
 #include "../lang/String.h"
 #include "../tools/class.h"
 #include "../memory/dark_magic.h"
-#include "../thread/RunnableBase.h"
 
 typedef unsigned int cplus_queue_size_t;
 

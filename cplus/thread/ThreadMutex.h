@@ -7,27 +7,38 @@
 
 
 #include <pthread.h>
+#include "Runnable.h"
 
-namespace cplus{
-	namespace thread{
-		class ThreadMutex {
-		public:
-			ThreadMutex() {
-				pthread_mutex_init(&mutex, nullptr);
-			}
-			
-			inline int lock() {
-				return pthread_mutex_lock(&mutex);
-			}
-			
-			inline int unlock() {
-				return pthread_mutex_unlock(&mutex);
-			}
-		
-		private:
-			pthread_mutex_t mutex;
-		};
-	}
+namespace cplus {
+    namespace thread {
+        class ThreadMutex {
+        public:
+            ThreadMutex() {
+                pthread_mutex_init(&mutex, nullptr);
+            }
+
+            int lock() {
+                return pthread_mutex_lock(&mutex);
+            }
+
+            int unlock() {
+                return pthread_mutex_unlock(&mutex);
+            }
+
+            template<class T>
+            void execute(const Runnable &runnable);
+
+        private:
+            pthread_mutex_t mutex;
+        };
+
+        template<class T>
+        void ThreadMutex::execute(const Runnable &runnableBase) {
+            lock();
+            runnableBase();
+            unlock();
+        }
+    }
 }
 
 

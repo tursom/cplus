@@ -10,54 +10,44 @@
 #include "../thread/ThreadMutex.h"
 
 namespace cplus {
-	namespace system {
-		int Exception::getStack(void **ary) {
-			static int max_size = 256;
-			return backtrace(ary, max_size);
-		}
+    namespace system {
+        int Exception::getStack(void **ary) {
+            static int max_size = 256;
+            return backtrace(ary, max_size);
+        }
 
-		lang::String Exception::getStack() const {
-			auto buffer = backtrace_symbols(ary, stack_count);
-			utils::StringBuilder sb;
-//			sb.append("stack_count=");
-//			sb.append(stack_count);
-//			sb.append("\n");
-			for (int i = 0; i < stack_count; i++) {
-//				sb.append("Stack[");
-//				sb.append(i);
-//				sb.append("]=");
-				sb.append(buffer[i]);
-				sb.append("\n");
-			}
-			return sb.toString();
-		}
+        lang::String Exception::getStack() const {
+            auto buffer = backtrace_symbols(ary, stack_count);
+            utils::StringBuilder sb;
+            for (int i = 0; i < stack_count; i++) {
+                sb.append(buffer[i]);
+                sb.append("\n");
+            }
+            return sb.toString();
+        }
 
-		Exception::Exception(const lang::String &message) : Exception(message, true) {}
+        Exception::Exception(const lang::String &message) : message(message) {
+            stack_count = getStack(ary);
+        }
 
-		Exception::Exception(const char *message) : Exception(lang::String(message)) {}
+        Exception::Exception(const char *message) : Exception(lang::String(message)) {}
 
-		Exception::Exception() : Exception("") {
-			stack_count = getStack(ary);
-		}
+        Exception::Exception() : Exception("") {}
 
-		Exception::Exception(const char *message, bool saveStack)
-				: Exception(lang::String(message), saveStack) {}
 
-		Exception::Exception(const lang::String &message, bool saveStack) : message(message) {}
+        const lang::String Exception::getStackTrace() const {
+            return stackTrace == nullptr ? lang::String("null") : *stackTrace;
+        }
 
-		const lang::String Exception::getStackTrace() const {
-			return stackTrace == nullptr ? lang::String("null") : *stackTrace;
-		}
+        const lang::String Exception::getStackTrace() {
+            if (stackTrace == nullptr) {
+                stackTrace = getStack().getPointer();
+            }
+            return *stackTrace;
+        }
 
-		const lang::String Exception::getStackTrace() {
-			if (stackTrace == nullptr) {
-				stackTrace = getStack().getPointer();
-			}
-			return *stackTrace;
-		}
-
-		const lang::String &Exception::getMessage() {
-			return message;
-		}
-	}
+        const lang::String &Exception::getMessage() {
+            return message;
+        }
+    }
 }

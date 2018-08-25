@@ -5,5 +5,9 @@
 #include "Runnable.h"
 
 namespace cplus {
-	namespace thread {}
+    namespace thread {
+        void Runnable::operator()() const {
+            run();
+        }
+    }
 }

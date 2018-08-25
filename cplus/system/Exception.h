@@ -25,10 +25,6 @@ namespace cplus {
 
 			explicit Exception(const lang::String &message);
 
-			explicit Exception(const char *message, bool saveStack);
-
-			explicit Exception(const lang::String &message, bool saveStack);
-
 			const lang::String &getMessage();
 
 			const lang::String getStackTrace();

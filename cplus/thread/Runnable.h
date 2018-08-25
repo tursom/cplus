@@ -7,19 +7,25 @@
 
 
 #include <functional>
-#include "RunnableBase.h"
 
 namespace cplus {
-	namespace thread {
-		class Runnable : public RunnableBase<void *> {
-		public:
-			Runnable() : RunnableBase() {}
-			
-			explicit Runnable(std::function<void()> func) : RunnableBase([&](void *) { func(); }) {}
-		private:
-		
-		};
-	}
+    namespace thread {
+        class Runnable {
+        public:
+            Runnable() : Runnable(nullptr) {}
+
+            explicit Runnable(void(*func)()) : func(func) {}
+
+            virtual void run() const {
+                if (func != nullptr)func();
+            }
+
+            void operator()() const;
+
+        private:
+            void (*func)();
+        };
+    }
 }
 
 #endif //CPLUS_RUNNABLE_H

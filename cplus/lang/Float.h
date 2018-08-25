@@ -10,29 +10,33 @@
 #include "Double.h"
 
 namespace cplus {
-	namespace lang {
-		CPlusClass(Float) {
-		public:
-			explicit Float(float f) : value(f) {}
-			
-			float get() const { return value; }
-			
-			float &get() { return value; }
-			
-			String toString() const override;
-			
-			Float qRSqrt();
-			
-			explicit operator float() const;
-			
-			explicit operator Double() { return Double(value); }
-			
-			static String toString(float value);
-		
-		private:
-			float value;
-		};
-	}
+    namespace lang {
+        CPlusClass(Float) {
+        public:
+            explicit Float(float f) : value(f) {}
+
+            Float(const Float &aFloat);
+
+            float get() const { return value; }
+
+            float &get() { return value; }
+
+            String toString() const override;
+
+            Float qRSqrt();
+
+            Float qSqrt();
+
+            explicit operator float() const;
+
+            explicit operator Double() { return Double(value); }
+
+            static String toString(float value);
+
+        private:
+            float value;
+        };
+    }
 }
 
 #endif //CPLUS_UTILS_Float_H

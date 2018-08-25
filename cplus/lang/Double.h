@@ -8,37 +8,33 @@
 #include "../tools/class.h"
 
 namespace cplus {
-	namespace lang {
-		class Float;
-		
-		CPlusClass(Double) {
-		public:
-			explicit Double(double value) : value(value) {}
-			
-			double get() const { return value; }
-			
-			double &get() { return value; }
-			
-			String toString() const override;
-			
-			explicit operator double() const;
-			
-			static String toString(double value);
-			
-			Double operator+(const Double &aDouble) const;
-			
-			Double operator-(const Double &aDouble) const;
-			
-			Double operator*(const Double &aDouble) const;
-			
-			Double operator/(const Double &aDouble) const;
-			
-			Double operator^(const Double &aDouble) const;
-		
-		private:
-			double value;
-		};
-	}
+    namespace lang {
+        class Float;
+
+        CPlusClass(Double) {
+        public:
+            explicit Double(double value) : value(value) {}
+
+            double get() const { return value; }
+
+            double &get() { return value; }
+
+            String toString() const override;
+
+            explicit operator double() const;
+
+            static String toString(double value);
+
+            Double operator^(const Double &aDouble) const;
+
+            Double operator^(double aDouble) const;
+
+            friend Double operator^(double aDouble, const Double &bDouble);
+
+        private:
+            double value;
+        };
+    }
 }
 
 #endif //UNTITLED_DOUBLE_H

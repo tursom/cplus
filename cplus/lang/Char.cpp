@@ -11,11 +11,13 @@ namespace cplus {
 			sprintf(str, "%d", value);
 			return String(str);
 		}
-		
-		String Char::toString(int8_t value) {
-			char str[12];
-			sprintf(str, "%d", value);
-			return String(str);
+
+		String Char::toString(char value) {
+			return String(value);
 		}
+
+		Char::Char() : Char(0) {}
+
+		Char::Char(char value) : value(value) {}
 	}
 }

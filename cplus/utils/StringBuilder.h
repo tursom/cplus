@@ -8,6 +8,7 @@
 
 #include <string>
 #include "../tools/class.h"
+#include "../lang/CPlusString.h"
 
 namespace cplus {
 	namespace utils {

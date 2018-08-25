@@ -8,41 +8,33 @@
 #include "Float.h"
 
 namespace cplus {
-	namespace lang {
-		String Double::toString() const {
-			char str[20];
-			sprintf(str, "%e", value);
-			return String(str);
-		}
-		
-		Double::operator double() const {
-			return value;
-		}
-		
-		String Double::toString(double value) {
-			char str[20];
-			sprintf(str, "%e", value);
-			return String(str);
-		}
-		
-		Double Double::operator+(const Double &aDouble) const {
-			return Double(value + aDouble.value);
-		}
-		
-		Double Double::operator-(const Double &aDouble) const {
-			return Double(value - aDouble.value);
-		}
-		
-		Double Double::operator*(const Double &aDouble) const {
-			return Double(value * aDouble.value);
-		}
-		
-		Double Double::operator/(const Double &aDouble) const {
-			return Double(value / aDouble.value);
-		}
-		
-		Double Double::operator^(const Double &aDouble) const {
-			return Double(pow(value, aDouble.value));
-		}
-	}
+    namespace lang {
+        String Double::toString() const {
+            char str[20];
+            sprintf(str, "%e", value);
+            return String(str);
+        }
+
+        Double::operator double() const {
+            return value;
+        }
+
+        String Double::toString(double value) {
+            char str[20];
+            sprintf(str, "%e", value);
+            return String(str);
+        }
+
+        Double Double::operator^(const Double &aDouble) const {
+            return Double(pow(value, aDouble.value));
+        }
+
+        Double Double::operator^(double aDouble) const {
+            return Double(pow(value, aDouble));
+        }
+
+        Double operator^(double aDouble, const Double &bDouble) {
+            return Double(pow(aDouble, bDouble.value));
+        }
+    }
 }
