@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cstring>
+#include <vector>
 #include "cplus/lang/String.h"
 #include "cplus/lang/Int.h"
 #include "cplus/system/time.h"
@@ -19,6 +20,7 @@
 #include "cplus/lang/ByteArray.h"
 #include "cplus/test/utils.h"
 #include "cplus/thread/Thread.h"
+#include "cplus/thread/Runnable.h"
 #include "cplus/socket/ServerSocket.h"
 #include "cplus/utils/Set.hpp"
 #include "cplus/system/io.h"
@@ -34,69 +36,82 @@ using namespace cplus::socket;
  */
 class ServerHandler : public Runnable {
 public:
-    void run() const override {
-        SocketServer server(12345);
-        ByteArray recv(1024);
-        std::cout << "server started at port " << 12345 << std::endl;
-        while (true) {
-            auto socket = server.accept();
-            socket.recv(recv);
-            socket.send(recv);
-            if (String(recv.getBuffer()) == String("exit"))
-                break;
-        }
-        std::cout << "server closed at port " << 12345 << std::endl;
-    }
+	void run() const override {
+		SocketServer server(12345);
+		ByteArray recv(1024);
+		std::cout << "server started at port " << 12345 << std::endl;
+		while (true) {
+			auto socket = server.accept();
+			socket.recv(recv);
+			socket.send(recv);
+			if (String(recv.getBuffer()) == String("exit"))
+				break;
+		}
+		std::cout << "server closed at port " << 12345 << std::endl;
+	}
 };
 
 void throwAnException() {
-    throw Exception("test hello");
+	throw Exception("test hello");
 }
 
 class T1 {
-    bool isLeft{};
-    bool red{};
-    uint32_t size = 1;
-    T1 *parent = nullptr;
-    T1 *left = nullptr;
-    T1 *right = nullptr;
+	bool isLeft{};
+	bool red{};
+	uint32_t size = 1;
+	T1 *parent = nullptr;
+	T1 *left = nullptr;
+	T1 *right = nullptr;
 };
 
 class T2 {
-    bool isLeft{};
-    bool red{};
-    uint32_t size = 1;
-    T2 *parent = nullptr;
-    T2 *left = nullptr;
-    T2 *right = nullptr;
+	bool isLeft{};
+	bool red{};
+	uint32_t size = 1;
+	T2 *parent = nullptr;
+	T2 *left = nullptr;
+	T2 *right = nullptr;
 };
 
-uint16_t port = 12347;
+uint16_t port = 12345;
+
+struct A {
+public:
+	A(int) {}
+
+private:
+	A(const A &) {
+	
+	}
+};
 
 int main() {
-    //启动服务器
-//	Thread([]() {
-//		SocketServer server(port);
-//		server.listen();
-//		println(2, &String::getString("server started at port: "), &Short::get(port));
-//		try {
-//			auto socket = server.accept();
-//			println(2, &String::getString("server got connection from:"), &socket.getAddress());
-//			auto recv = socket.recv(1024);
-//			sout << "server recv from:" << socket.getAddress() << endl
-//			     << ">>>" << recv.getBuffer() << endl;
-//			socket.send(recv);
-//		} catch (Exception e) {
-//			std::cerr << e.getMessage().c_str() << std::endl
-//			          << e.getStackTrace().c_str() << std::endl;
-//		} catch (std::exception e) {
-//			std::cerr << "server exception: " << e.what() << std::endl;
-//		}
-//	}).start();
+	cplus::utils::List<int> list{1, 2, 3};
+	//启动服务器
+	Thread([]() {
+		SocketServer server(port);
+		server.listen();
+		println({&String::getString("server started at port: "), &Short::get(port)});
+		try {
+			while (true) {
+				auto socket = server.accept();
+				println({&String::getString("server got connection from:"), &socket.getAddress()});
+				auto recv = socket.recv(1024);
+				println({&String::getString("server recv from:"), &socket.getAddress()});
+				println({&String::getString(">>>"), recv.getBuffer()});
+				socket.send(recv);
+			}
+		} catch (const Exception &e) {
+			std::cerr << e.getMessage().c_str() << std::endl
+			          << e.getStackTrace().c_str() << std::endl;
+		} catch (const std::exception &e) {
+			std::cerr << "server exception: " << e.what() << std::endl;
+		}
+	}).start();
 
 
 //	Thread::msleep(100);
-    try {
+//	try {
 //		auto message = ByteArray("hello?", sizeof("hello?"));
 //		auto socket = Socket("127.0.0.1", port);
 //
@@ -107,7 +122,7 @@ int main() {
 //		Thread::msleep(100);
 //		ssize_t sendSize = socket.send(message);
 //		if (sendSize == -1) {
-        throw Exception("send error: " + Long(errno).toString());
+//		throw Exception("send error: " + Long(errno).toString());
 //		} else {
 //			println(2, &String::getString("sending size: "),
 //			        &String::getString(String(sendSize)));
@@ -116,13 +131,13 @@ int main() {
 //		auto recv = socket.recv(1024);
 //		println(2, &String::getString("recving from server:\n>>>"),
 //		        &String::getString(String(recv)));
-
-    } catch (Exception e) {
-        std::cerr << e.getMessage().c_str() << std::endl
-                  << e.getStackTrace().c_str() << std::endl;
-    } catch (std::exception e) {
-        std::cerr << "client exception: " << e.what() << std::endl;
-    }
+	
+	//} catch (Exception e) {
+	//	std::cerr << e.getMessage().c_str() << std::endl
+	//	          << e.getStackTrace().c_str() << std::endl;
+	//} catch (std::exception e) {
+	//	std::cerr << "client exception: " << e.what() << std::endl;
+	//}
 
 //	ServerHandler serverHandler;
 //	Thread([]() {
@@ -147,5 +162,5 @@ int main() {
 //		}
 //	}).start();
 //	Thread::detachAll();
-    Thread::exitThread();
+	Thread::exitThread();
 }

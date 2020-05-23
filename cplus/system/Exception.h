@@ -14,31 +14,29 @@ namespace cplus {
 		class String;
 	}
 	namespace system {
-		CPlusClass(Exception) {
+		CPlusClass(Exception), std::exception {
 		public:
 			/**
 			 * 默认构造函数调用Exception("")进行初始化
 			 */
 			Exception();
-
+			
 			explicit Exception(const char *message);
-
+			
 			explicit Exception(const lang::String &message);
-
-			const lang::String &getMessage();
-
-			const lang::String getStackTrace();
-
-			const lang::String getStackTrace() const;
-
+			
+			const lang::String &getMessage() const;
+			
+			lang::String getStackTrace() const;
+		
 		private:
 			static int getStack(void **ary);
-
+			
 			lang::String getStack() const;
-
+			
 			void *ary[256];
 			int stack_count;
-
+			
 			lang::String *stackTrace = nullptr;
 			const lang::String message;
 		};

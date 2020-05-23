@@ -34,7 +34,7 @@ namespace cplus {
 
 			lang::ByteArray &recv(size_t bufferSize);
 
-			ssize_t recv(lang::ByteArray &buffer);
+			ssize_t recv(lang::ByteArray &buffer) const;
 
 			ssize_t recv(char buffer[], size_t bufferSize) const;
 
@@ -46,13 +46,13 @@ namespace cplus {
 
 			ssize_t write(char buffer[], size_t bufferSize) const;
 
-			uint16_t getPort() { return htons(addr.sin_port); }
+			uint16_t getPort() const;
 
 			int getSocket() const;
 
 			const sockaddr_in &getAddr() const;
 
-			void close();
+			void close() const;
 
 			static lang::String getIp(sockaddr_in addr);
 

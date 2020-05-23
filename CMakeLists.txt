@@ -21,7 +21,7 @@ add_executable(
         cplus/test/memory.h cplus/socket/ServerSocket.cpp cplus/socket/ServerSocket.h cplus/socket/Socket.cpp
         cplus/socket/Socket.h cplus/lang/ByteArray.cpp cplus/lang/ByteArray.h cplus/lang/Byte.cpp
         cplus/system/Exception.cpp cplus/system/Exception.h cplus/utils/Set.hpp cplus/utils/Queue.cpp
-        cplus/utils/Queue.h cplus/lang/CPlusString.cpp cplus/lang/CPlusString.h cplus/utils/Map.hpp cplus/system/OutOfIndexException.cpp cplus/system/OutOfIndexException.h)
+        cplus/utils/Queue.h cplus/lang/CPlusString.cpp cplus/lang/CPlusString.h cplus/utils/Map.hpp cplus/system/OutOfIndexException.cpp cplus/system/OutOfIndexException.h cplus/utils/ByteBuffer.cpp cplus/utils/ByteBuffer.h)
 
 find_package(Threads REQUIRED)
 if(THREADS_HAVE_PTHREAD_ARG)

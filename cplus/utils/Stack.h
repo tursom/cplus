@@ -170,10 +170,10 @@ namespace cplus {
 			};
 			
 			
-			cplus_queue_size_t maxSize;
+			cplus_queue_size_t maxSize{};
 			StackPoint *state;
 			StackPoint *lastState;
-			cplus_queue_size_t stackSize;
+			cplus_queue_size_t stackSize{};
 		};
 	}
 }

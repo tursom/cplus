@@ -7,25 +7,31 @@
 
 
 #include <functional>
+#include <utility>
 
 namespace cplus {
-    namespace thread {
-        class Runnable {
-        public:
-            Runnable() : Runnable(nullptr) {}
-
-            explicit Runnable(void(*func)()) : func(func) {}
-
-            virtual void run() const {
-                if (func != nullptr)func();
-            }
-
-            void operator()() const;
-
-        private:
-            void (*func)();
-        };
-    }
+	namespace thread {
+		class Runnable {
+		public:
+			Runnable() : Runnable(nullptr) {}
+			
+			explicit Runnable(const void(*func)()) : func(func) {}
+			
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "performance-unnecessary-value-param"
+			explicit Runnable(const std::function<void()> func) : func(func) {}
+#pragma clang diagnostic pop
+			
+			virtual void run() const {
+				if (func != nullptr)func();
+			}
+			
+			void operator()() const;
+		
+		private:
+			const std::function<void()> func;
+		};
+	}
 }
 
 #endif //CPLUS_RUNNABLE_H
