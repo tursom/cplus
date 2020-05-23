@@ -57,6 +57,8 @@ namespace cplus {
 			static void binToString(char value, char *buffer);
 			
 			static void binToHex(char value, char *buffer);
+			
+			static ByteArray allocate(size_t size);
 		
 		private:
 			char *buffer;

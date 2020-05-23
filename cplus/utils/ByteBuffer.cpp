@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include "ByteBuffer.h"
 #include "../system/OutOfIndexException.h"
+#include "../memory/dark_magic.h"
 
 using namespace cplus::system;
 
@@ -28,19 +29,19 @@ namespace cplus {
 		}
 		
 		lang::ByteArray *ByteBuffer::getArray() const {
-			return array;
+			return array.get();
 		}
 		
 		void ByteBuffer::put(int8_t byte) {
 			if (writePosition + 1 > capacity) {
-				throw OutOfIndexException()
+				throw OutOfIndexException();
 			}
 			array->operator[](arrayOffset + writePosition++) = byte;
 		}
 		
 		void ByteBuffer::put(int16_t s) {
 			if (writePosition + 2 > capacity) {
-				throw OutOfIndexException()
+				throw OutOfIndexException();
 			}
 			s = ntohs(s);
 			array->set(arrayOffset + writePosition, (int8_t *) &s, 2);
@@ -48,7 +49,7 @@ namespace cplus {
 		
 		void ByteBuffer::put(int32_t i) {
 			if (writePosition + 4 > capacity) {
-				throw OutOfIndexException()
+				throw OutOfIndexException();
 			}
 			i = ntohl(i);
 			array->set(arrayOffset + writePosition, (int8_t *) &i, 4);
@@ -56,7 +57,7 @@ namespace cplus {
 		
 		void ByteBuffer::put(int64_t l) {
 			if (writePosition + 8 > capacity) {
-				throw OutOfIndexException()
+				throw OutOfIndexException();
 			}
 			l = be64toh(l);
 			array->set(arrayOffset + writePosition, (int8_t *) &l, 8);
@@ -133,7 +134,47 @@ namespace cplus {
 		}
 		
 		char *ByteBuffer::getBuffer() {
-			return array->getBuffer();
+			return array->getBuffer() + arrayOffset;
+		}
+		
+		char *ByteBuffer::getReadBuffer() {
+			return array->getBuffer() + arrayOffset + readPosition;
+		}
+		
+		char *ByteBuffer::getWriteBuffer() {
+			return array->getBuffer() + arrayOffset + writePosition;
+		}
+		
+		size_t ByteBuffer::getReadableSize() const {
+			return writePosition - readPosition;
+		}
+		
+		size_t ByteBuffer::getWriteableSize() const {
+			return capacity - writePosition;
+		}
+		
+		const char *ByteBuffer::getReadBuffer() const {
+			return array->getBuffer() + arrayOffset + readPosition;
+		}
+		
+		ByteBuffer::ByteBuffer(
+				std::shared_ptr<cplus::lang::ByteArray> array,
+				size_t arrayOffset,
+				size_t capacity,
+				size_t readPosition,
+				size_t writePosition
+		) : array(array),
+		    arrayOffset(arrayOffset),
+		    capacity(capacity),
+		    readPosition(readPosition),
+		    writePosition(writePosition) {
+			if (capacity < 0) {
+				cplus::memory::copy(array->getSize(), this->capacity);
+			}
+		}
+		
+		lang::String ByteBuffer::getString() {
+			return lang::String(getReadBuffer());
 		}
 	}
 }

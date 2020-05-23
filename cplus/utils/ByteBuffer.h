@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <memory>
 #include "../tools/class.h"
 #include "../lang/ByteArray.h"
 
@@ -15,6 +16,17 @@ namespace cplus {
 	namespace utils {
 		CPlusClass(ByteBuffer) {
 		public:
+			explicit ByteBuffer(
+					std::shared_ptr<cplus::lang::ByteArray> array,
+					size_t arrayOffset = 0,
+					size_t capacity = -1,
+					size_t readPosition = 0,
+					size_t writePosition = 0
+			);
+			
+			explicit ByteBuffer(size_t capacity) : ByteBuffer(std::make_shared<cplus::lang::ByteArray>(capacity)) {}
+			
+			
 			size_t getReadPosition() const;
 			
 			void setReadPosition(size_t readPosition);
@@ -27,7 +39,13 @@ namespace cplus {
 			
 			const char *getBuffer() const;
 			
+			const char *getReadBuffer() const;
+			
 			char *getBuffer();
+			
+			char *getReadBuffer();
+			
+			char *getWriteBuffer();
 			
 			size_t getArrayOffset() const;
 			
@@ -56,9 +74,15 @@ namespace cplus {
 			float getFloat();
 			
 			double getDouble();
+			
+			size_t getReadableSize() const;
+			
+			size_t getWriteableSize() const;
+			
+			lang::String getString();
 		
 		private:
-			cplus::lang::ByteArray *array{};
+			std::shared_ptr<cplus::lang::ByteArray> array{};
 			const size_t arrayOffset{0};
 			const size_t capacity{array->getSize()};
 			size_t readPosition{0};

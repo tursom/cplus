@@ -92,13 +92,14 @@ int main() {
 		SocketServer server(port);
 		server.listen();
 		println({&String::getString("server started at port: "), &Short::get(port)});
+		auto buffer = ByteBuffer(1024);
 		try {
 			while (true) {
 				auto socket = server.accept();
 				println({&String::getString("server got connection from:"), &socket.getAddress()});
-				auto recv = socket.recv(1024);
+				socket.read(buffer);
 				println({&String::getString("server recv from:"), &socket.getAddress()});
-				println({&String::getString(">>>"), recv.getBuffer()});
+				println({&String::getString(">>>"), buffer.getBuffer()});
 				socket.send(recv);
 			}
 		} catch (const Exception &e) {

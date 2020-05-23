@@ -55,10 +55,10 @@ namespace cplus {
 			close();
 		}
 		
-		lang::ByteArray &Socket::recv(size_t bufferSize) {
+		lang::ByteArray &Socket::recv(size_t bufferSize, int flags) {
 			buffer.setSize(bufferSize);
 			buffer.fillWithZero();
-			auto readSize = ::recv(socket, buffer.getBuffer(), bufferSize, 0);
+			auto readSize = ::recv(socket, buffer.getBuffer(), bufferSize, flags);
 			if (readSize == -1)
 				return buffer;
 			buffer.setSize(static_cast<size_t>(readSize));
@@ -69,22 +69,22 @@ namespace cplus {
 			return address;
 		}
 		
-		ssize_t Socket::recv(lang::ByteArray &buffer) const {
-			ssize_t readSize = ::recv(socket, buffer.getBuffer(), buffer.getSize(), 0);
+		ssize_t Socket::recv(lang::ByteArray &buffer, int flags) const {
+			ssize_t readSize = ::recv(socket, buffer.getBuffer(), buffer.getSize(), flags);
 			buffer.setSize(static_cast<size_t>(readSize));
 			return readSize;
 		}
 		
-		ssize_t Socket::recv(char *buffer, size_t bufferSize) const {
-			return ::recv(socket, buffer, bufferSize, 0);
+		ssize_t Socket::recv(char *buffer, size_t bufferSize, int flags) const {
+			return ::recv(socket, buffer, bufferSize, flags);
 		}
 		
-		ssize_t Socket::send(char *buffer, size_t bufferSize) const {
-			return ::send(socket, buffer, bufferSize, 0);
+		ssize_t Socket::send(char *buffer, size_t bufferSize, int flags) const {
+			return ::send(socket, buffer, bufferSize, flags);
 		}
 		
-		ssize_t Socket::send(const lang::ByteArray &buffer) const {
-			return ::send(socket, buffer.getBuffer(), buffer.getSize(), 0);
+		ssize_t Socket::send(const lang::ByteArray &buffer, int flags) const {
+			return ::send(socket, buffer.getBuffer(), buffer.getSize(), flags);
 		}
 		
 		ssize_t Socket::write(const lang::ByteArray &buffer) const {
@@ -113,6 +113,38 @@ namespace cplus {
 		
 		uint16_t Socket::getPort() const {
 			return htons(addr.sin_port);
+		}
+		
+		lang::ByteArray &Socket::read(size_t bufferSize) {
+			buffer.setSize(bufferSize);
+			buffer.fillWithZero();
+			auto readSize = ::read(socket, buffer.getBuffer(), bufferSize);
+			if (readSize == -1)
+				return buffer;
+			buffer.setSize(static_cast<size_t>(readSize));
+			return buffer;
+		}
+		
+		ssize_t Socket::read(lang::ByteArray &buffer) const {
+			ssize_t readSize = ::read(socket, buffer.getBuffer(), buffer.getSize());
+			buffer.setSize(static_cast<size_t>(readSize));
+			return readSize;
+		}
+		
+		ssize_t Socket::read(char *buffer, size_t bufferSize) const {
+			return ::read(socket, buffer, bufferSize);
+		}
+		
+		ssize_t Socket::read(utils::ByteBuffer &buffer) const {
+			ssize_t readSize = ::read(socket, buffer.getWriteBuffer(), buffer.getWriteableSize());
+			buffer.setWritePosition(buffer.getWritePosition() + readSize);
+			return readSize;
+		}
+		
+		ssize_t Socket::write(const utils::ByteBuffer &buffer) const {
+			ssize_t writeSize = ::write(socket, buffer.getReadBuffer(), buffer.getReadableSize());
+			((utils::ByteBuffer) buffer).setReadPosition(buffer.getReadPosition() + writeSize);
+			return writeSize;
 		}
 	}
 }

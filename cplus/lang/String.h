@@ -6,6 +6,7 @@
 #define CPLUS_UTILS_String_H
 
 #include <string>
+#include <memory>
 #include "../tools/class.h"
 
 namespace cplus {
@@ -87,7 +88,7 @@ namespace cplus {
             static String &getString(const char *string);
 
         private:
-            CPlusString *value{};
+            std::shared_ptr<CPlusString> value{};
         };
 
         /**

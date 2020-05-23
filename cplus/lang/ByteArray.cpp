@@ -123,7 +123,7 @@ namespace cplus {
 			return size;
 		}
 		
-		char *ByteArray::getBuffer() const {
+		const char *ByteArray::getBuffer() const {
 			return buffer;
 		}
 		
@@ -151,6 +151,10 @@ namespace cplus {
 		
 		char *ByteArray::getBuffer() {
 			return buffer;
+		}
+		
+		ByteArray ByteArray::allocate(size_t size) {
+			return ByteArray(size);
 		}
 	}
 }
