@@ -27,6 +27,8 @@ namespace cplus {
 			}
 			
 			void operator()() const;
+			
+			const std::function<void()> &getFunc() const;
 		
 		private:
 			const std::function<void()> func;

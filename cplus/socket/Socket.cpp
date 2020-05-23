@@ -137,13 +137,13 @@ namespace cplus {
 		
 		ssize_t Socket::read(utils::ByteBuffer &buffer) const {
 			ssize_t readSize = ::read(socket, buffer.getWriteBuffer(), buffer.getWriteableSize());
-			buffer.setWritePosition(buffer.getWritePosition() + readSize);
+			buffer.readSize(readSize);
 			return readSize;
 		}
 		
 		ssize_t Socket::write(const utils::ByteBuffer &buffer) const {
 			ssize_t writeSize = ::write(socket, buffer.getReadBuffer(), buffer.getReadableSize());
-			((utils::ByteBuffer) buffer).setReadPosition(buffer.getReadPosition() + writeSize);
+			buffer.writeSize(writeSize);
 			return writeSize;
 		}
 	}

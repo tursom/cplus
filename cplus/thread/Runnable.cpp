@@ -9,5 +9,9 @@ namespace cplus {
         void Runnable::operator()() const {
             run();
         }
+	
+	    const std::function<void()> &Runnable::getFunc() const {
+		    return func;
+	    }
     }
 }

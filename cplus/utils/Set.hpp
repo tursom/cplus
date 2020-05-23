@@ -21,7 +21,7 @@ namespace cplus {
 		public:
 			
 			Set() = default;
-
+			
 			Set(T *array, size_t arraySize) : Set() {
 				for (size_t i = 0; i < arraySize; ++i) {
 					insert(array[i]);
@@ -178,8 +178,7 @@ namespace cplus {
 				}
 				
 				TreeNode(bool red, bool isLeft, TreeNode *parent, const T &key)
-						: isRedColor(red), key((T *) malloc(sizeof(T))), isLeft(isLeft), parent(parent) {
-					memory::copy(key, *this->key);
+						: isRedColor(red), isLeft(isLeft), parent(parent), key(key) {
 					while (parent != nullptr) {
 						parent->size++;
 						parent = parent->parent;
@@ -211,7 +210,7 @@ namespace cplus {
 				
 				TreeNode *getRight() const { return right; }
 				
-				T *get() const { return key; }
+				T *get() const { return (T *) &key; }
 				
 				void setParent(TreeNode *parent) {
 					TreeNode::parent = parent;
@@ -252,7 +251,7 @@ namespace cplus {
 				T *find(const T &value) {
 					auto ret = find(this, value);
 					if (ret == nullptr)return nullptr;
-					else return ret->key;
+					else return &ret->key;
 				}
 				
 				uint32_t getSize() {
@@ -394,8 +393,8 @@ namespace cplus {
 					}
 					TreeNode *state = root;
 					while (state != nullptr) {
-						if (value == *state->key) break;
-						else if (value <= *state->key) {
+						if (value == state->key) break;
+						else if (value <= state->key) {
 							if (state->left == nullptr) {
 								state->left = new TreeNode(true, true, state, value);
 								fixAfterInsertion(state->left);
@@ -421,8 +420,8 @@ namespace cplus {
 					TreeNode *state = root;
 //					std::cout << "Set: static: state: " << state << std::endl;
 					while (state != nullptr) {
-						if (value == *state->key) break;
-						else if (value <= *state->key) {
+						if (value == state->key) break;
+						else if (value <= state->key) {
 							state = state->left;
 						} else {
 							state = state->right;
@@ -450,7 +449,7 @@ namespace cplus {
 				TreeNode *parent = nullptr;
 				TreeNode *left = nullptr;
 				TreeNode *right = nullptr;
-				T *key = nullptr;
+				T key;
 			};
 			
 			TreeNode *root = nullptr;

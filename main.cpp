@@ -88,25 +88,32 @@ private:
 int main() {
 	cplus::utils::List<int> list{1, 2, 3};
 	//启动服务器
-	Thread([]() {
+	Thread([]() -> void {
 		SocketServer server(port);
 		server.listen();
 		println({&String::getString("server started at port: "), &Short::get(port)});
 		auto buffer = ByteBuffer(1024);
-		try {
-			while (true) {
-				auto socket = server.accept();
+		while (true) {
+			auto socket = server.accept();
+			try {
 				println({&String::getString("server got connection from:"), &socket.getAddress()});
-				socket.read(buffer);
-				println({&String::getString("server recv from:"), &socket.getAddress()});
-				println({&String::getString(">>>"), buffer.getBuffer()});
-				socket.send(recv);
+				while (true) {
+					socket.read(buffer);
+					println({&String::getString("server recv from:"), &socket.getAddress()});
+					println({String::getString(">>>"), buffer.getString()});
+					socket.write(buffer);
+				}
+			} catch (const Exception &e) {
+				std::cerr << e.getMessage().c_str() << std::endl
+				          << e.getStackTrace().c_str() << std::endl;
+				socket.close();
+			} catch (const std::exception &e) {
+				std::cerr << "server exception: " << e.what() << std::endl;
+				socket.close();
+			} catch (int e) {
+				std::cerr << e << std::endl;
+				socket.close();
 			}
-		} catch (const Exception &e) {
-			std::cerr << e.getMessage().c_str() << std::endl
-			          << e.getStackTrace().c_str() << std::endl;
-		} catch (const std::exception &e) {
-			std::cerr << "server exception: " << e.what() << std::endl;
 		}
 	}).start();
 

@@ -79,6 +79,10 @@ namespace cplus {
 			
 			size_t getWriteableSize() const;
 			
+			size_t readSize(size_t size) const;
+			
+			size_t writeSize(size_t size) const;
+			
 			lang::String getString();
 		
 		private:

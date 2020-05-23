@@ -4,14 +4,11 @@
 
 #include "String.h"
 #include <set>
-#include <iostream>
 #include <cstring>
 #include <memory>
 #include "ByteArray.h"
 #include "CPlusString.h"
 #include "../utils/Set.hpp"
-#include "../utils/StringBuilder.h"
-#include "../utils/ArrayStack.hpp"
 
 
 namespace cplus {
@@ -192,7 +189,7 @@ namespace cplus {
 			
 			size_t usedSize() {
 				size_t strSize = 0;
-				forEach([&strSize](const std::shared_ptr<CPlusString>& value) {
+				forEach([&strSize](const std::shared_ptr<CPlusString> &value) {
 					strSize += value->getBufferSize();
 				});
 				return sizeof(*this) + sizeof(*root) * root->getSize() +
@@ -649,8 +646,7 @@ namespace cplus {
 			return &getString(*this);
 		}
 		
-		String::String(char i) {
-		
+		String::String(const char *str, size_t len) : value(new CPlusString(str, len)) {
 		}
 	}
 }

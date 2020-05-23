@@ -9,6 +9,7 @@
 #include <utility>
 #include <unistd.h>
 #include <ctime>
+#include <iostream>
 #include "ThreadMutex.h"
 #include "Runnable.h"
 #include "../system/Exception.h"
@@ -19,19 +20,18 @@ namespace cplus {
 		CPlusClass(Thread) {
 		public:
 			
-			explicit Thread(std::shared_ptr<const Runnable> func) : func(std::move(func)) {
+			explicit Thread(Runnable func) : func(std::move(func)) {
 				pidCountMutex.lock();
 				pid = pidCount++;
 				pidCountMutex.unlock();
 			}
-			
-			explicit Thread(const Runnable *func) : Thread(std::shared_ptr<const Runnable>(func)) {
-			}
-			
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "performance-unnecessary-value-param"
-			explicit Thread(std::function<void()> func) : Thread(new Runnable(func)) {
+			
+			explicit Thread(std::function<void(void)> func) : func(func) {
 			}
+
 #pragma clang diagnostic pop
 			
 			~Thread();
@@ -45,9 +45,9 @@ namespace cplus {
 			/**
 			 * 释放线程
 			 */
-			static void detach(const Thread& thread1) ;
-		
-			static void join(const Thread& thread1) {
+			static void detach(const Thread &thread1);
+			
+			static void join(const Thread &thread1) {
 				pthread_join(thread1.getPthread(), nullptr);
 			}
 			
@@ -99,7 +99,7 @@ namespace cplus {
 		
 		private:
 			pthread_t pthread{};
-			const std::shared_ptr<const Runnable> func;
+			const Runnable func;
 			pid_t pid;
 			static pid_t pidCount;
 			static ThreadMutex pidCountMutex;

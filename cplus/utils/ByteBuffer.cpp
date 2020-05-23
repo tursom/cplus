@@ -174,7 +174,19 @@ namespace cplus {
 		}
 		
 		lang::String ByteBuffer::getString() {
-			return lang::String(getReadBuffer());
+			return lang::String(getReadBuffer(), readSize(getReadableSize()));
+		}
+		
+		size_t ByteBuffer::readSize(size_t size) const {
+			size_t position = readPosition;
+			cplus::memory::copy(readPosition + size, readPosition);
+			return position;
+		}
+		
+		size_t ByteBuffer::writeSize(size_t size) const {
+			size_t position = writePosition;
+			cplus::memory::copy(writePosition + size, writePosition);
+			return position;
 		}
 	}
 }

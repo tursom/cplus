@@ -12,9 +12,7 @@ namespace cplus {
 		
 		void *threadStart(void *t) {
 			auto thread = (Thread *) t;
-			thread
-			->func
-			->run();
+			thread->func.run();
 			return nullptr;
 		}
 		
